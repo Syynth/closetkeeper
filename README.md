@@ -34,6 +34,10 @@ Install the SpacetimeDB CLI from [spacetimedb.com/install](https://spacetimedb.c
 Not yet scaffolded — setup instructions land here once the module and web app
 exist.
 
+## License
+
+[Apache-2.0](LICENSE).
+
 ## Before contributing
 
 Read [`CLAUDE.md`](CLAUDE.md). It documents non-negotiable privacy and safety
