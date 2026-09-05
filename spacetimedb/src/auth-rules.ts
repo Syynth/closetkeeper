@@ -67,8 +67,8 @@ const FAMILY: readonly Capability[] = ["family.read", "family.write"];
 
 export const SYSTEM_ROLES: readonly SystemRole[] = [
 	{
-		key: "super_admin",
-		label: "Super-admin",
+		key: "system_admin",
+		label: "System administrator",
 		description:
 			"Technical role for bootstrap and recovery. Holds every capability.",
 		capabilities: ALL,
@@ -76,8 +76,9 @@ export const SYSTEM_ROLES: readonly SystemRole[] = [
 	{
 		key: "president",
 		label: "President",
-		description: "The organization's top officer. Holds every capability.",
-		capabilities: ALL,
+		description:
+			"The organization's top officer. Same access as staff; system access stays with the system administrator.",
+		capabilities: [...OPERATIONS, ...FAMILY, "staff.manage"],
 	},
 	{
 		key: "staff",
@@ -110,7 +111,7 @@ export const SYSTEM_ROLES: readonly SystemRole[] = [
 ];
 
 /** The role the publisher and the bootstrap email receive. */
-export const BOOTSTRAP_ROLE_KEY = "super_admin";
+export const BOOTSTRAP_ROLE_KEY = "system_admin";
 
 /** Role keys are stable machine names: lowercase, digits, underscores. */
 export function isValidRoleKey(key: string): boolean {

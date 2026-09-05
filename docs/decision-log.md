@@ -336,3 +336,19 @@ Entries are appended at the bottom, newest last.
   before the throw. The only way to persist a denial would be to not
   throw, which would report success to the client. Host logs are the
   honest fallback; they are retained by the provider and carry no PII.
+
+## The technical role is "system administrator"; president has staff-level access
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** minor/local
+- **WHAT:** The bootstrap role is keyed `system_admin` and labelled
+  "System administrator" (was `super_admin`). President is seeded with the
+  same bundle as staff and secretary (families, inventory, donations, staff
+  management); only the system administrator holds `staff.manage_sensitive`
+  and `role.manage` by default. No production data exists, so the key was
+  renamed rather than aliased.
+- **WHY:** The maintainer's call while reviewing the admin screens: the
+  president should not have more access than the secretary or treasurer,
+  and "system administrator" names what the technical role is for.
+  Access to the system is a job, not a rank.

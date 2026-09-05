@@ -73,7 +73,7 @@ jobs:
           EMAIL: ${{ secrets.BOOTSTRAP_STAFF_EMAIL }}
         run: >
           spacetime call closetkeeper-dev --server maincloud
-          invite_staff "\"$EMAIL\"" '"Maintainer"' '"super_admin"'
+          invite_staff "\"$EMAIL\"" '"Maintainer"' '"system_admin"'
 
   prod:
     name: Publish to closetkeeper (production)
@@ -114,4 +114,4 @@ jobs:
           EMAIL: ${{ secrets.BOOTSTRAP_STAFF_EMAIL }}
         run: >
           spacetime call closetkeeper --server maincloud
-          invite_staff "\"$EMAIL\"" '"Maintainer"' '"super_admin"'
+          invite_staff "\"$EMAIL\"" '"Maintainer"' '"system_admin"'

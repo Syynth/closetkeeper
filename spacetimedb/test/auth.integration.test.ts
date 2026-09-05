@@ -2,7 +2,7 @@
  * Authorization against a real local instance.
  *
  * The CLI's logged-in identity publishes the module, so `init` seeds it as
- * the first super-admin. Calls made without `--anonymous` are therefore
+ * the first system administrator. Calls made without `--anonymous` are therefore
  * "the publisher"; calls made with it are "a stranger".
  */
 import { beforeAll, describe, expect, it } from "vitest";
@@ -64,18 +64,18 @@ describe("bootstrap", () => {
 			"president",
 			"secretary",
 			"staff",
-			"super_admin",
+			"system_admin",
 			"treasurer",
 			"volunteer",
 		]);
 		expect(capsOf("volunteer")).not.toContain("family.read");
-		expect(capsOf("super_admin")).toContain("staff.manage_sensitive");
+		expect(capsOf("system_admin")).toContain("staff.manage_sensitive");
 	});
 
-	it("seeds exactly one staff member: the publisher, as super_admin", () => {
+	it("seeds exactly one staff member: the publisher, as system_admin", () => {
 		const rows = staffRows();
 		expect(rows).toHaveLength(1);
-		expect(rows[0]?.[2]).toBe("super_admin");
+		expect(rows[0]?.[2]).toBe("system_admin");
 		expect(rows[0]?.[3]).toBe(true);
 	});
 
@@ -120,7 +120,7 @@ describe("invite_staff", () => {
 			staffRows()
 				.map((r) => r[2])
 				.sort(),
-		).toEqual(["super_admin", "volunteer"]);
+		).toEqual(["system_admin", "volunteer"]);
 		expect(
 			sql(DATABASE, "SELECT id FROM person WHERE email = 'v@example.org'"),
 		).toHaveLength(1);
@@ -152,7 +152,7 @@ describe("invite_staff", () => {
 		).toContain("already a staff member");
 	});
 
-	it("lets a super-admin invite into a protected role (staff sees family data)", () => {
+	it("lets a system administrator invite into a protected role (staff sees family data)", () => {
 		expect(
 			call(DATABASE, "invite_staff", ["s@example.org", "Sam", "staff"]),
 		).toBeNull();
@@ -160,7 +160,7 @@ describe("invite_staff", () => {
 			staffRows()
 				.map((r) => r[2])
 				.sort(),
-		).toEqual(["staff", "super_admin", "volunteer"]);
+		).toEqual(["staff", "system_admin", "volunteer"]);
 	});
 });
 
@@ -177,8 +177,8 @@ describe("set_staff_active / set_staff_role", () => {
 		expect(err).toContain("not authorized");
 	});
 
-	it("will not let the last super-admin deactivate or demote themselves", () => {
-		const me = staffIdByRole("super_admin");
+	it("will not let the last system administrator deactivate or demote themselves", () => {
+		const me = staffIdByRole("system_admin");
 		expect(call(DATABASE, "set_staff_active", [me, false])).toContain(
 			"nobody else",
 		);
@@ -255,14 +255,14 @@ describe("roles", () => {
 		);
 	});
 
-	it("never strips super_admin", () => {
+	it("never strips system_admin", () => {
 		expect(
 			call(DATABASE, "revoke_capability", [
-				roleId("super_admin"),
+				roleId("system_admin"),
 				"role.manage",
 			]),
 		).toContain("keeps every capability");
-		expect(capsOf("super_admin")).toContain("role.manage");
+		expect(capsOf("system_admin")).toContain("role.manage");
 	});
 
 	it("records a protected grant as such in the audit log", () => {

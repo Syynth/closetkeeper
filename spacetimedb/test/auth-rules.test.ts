@@ -64,13 +64,13 @@ describe("system roles", () => {
 		}
 	});
 
-	it("seed the org's roles plus the technical super_admin", () => {
+	it("seed the org's roles plus the technical system_admin", () => {
 		expect([...byKey.keys()].sort()).toEqual(
 			[
 				"president",
 				"secretary",
 				"staff",
-				"super_admin",
+				"system_admin",
 				"treasurer",
 				"volunteer",
 			].sort(),
@@ -78,8 +78,8 @@ describe("system roles", () => {
 		expect(byKey.has(BOOTSTRAP_ROLE_KEY)).toBe(true);
 	});
 
-	it("give super_admin every capability", () => {
-		expect([...(byKey.get("super_admin")?.capabilities ?? [])].sort()).toEqual(
+	it("give system_admin every capability", () => {
+		expect([...(byKey.get("system_admin")?.capabilities ?? [])].sort()).toEqual(
 			[...CAPABILITIES].sort(),
 		);
 	});
@@ -92,16 +92,13 @@ describe("system roles", () => {
 		expect(v).toContain("donation.write");
 	});
 
-	it("give every non-volunteer role family data, and only treasurer financials", () => {
+	it("give every non-volunteer role family data, and only treasurer (and the system admin) financials", () => {
 		for (const key of ["president", "secretary", "staff", "treasurer"]) {
 			expect(byKey.get(key)?.capabilities, key).toContain("family.read");
 		}
 		for (const r of SYSTEM_ROLES) {
 			const hasFinancial = r.capabilities.includes("financial.read");
-			const allowed =
-				r.key === "treasurer" ||
-				r.key === "super_admin" ||
-				r.key === "president";
+			const allowed = r.key === "treasurer" || r.key === "system_admin";
 			expect(hasFinancial, r.key).toBe(allowed);
 		}
 	});
