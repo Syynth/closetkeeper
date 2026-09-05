@@ -254,3 +254,24 @@ Entries are appended at the bottom, newest last.
   secret. Two Workers mirror the two databases exactly. A single preview
   alias is used because SpacetimeAuth redirect URIs must match exactly, so
   one registration covers every preview.
+
+## Chakra UI v3 for the admin app
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** admin
+- **SCOPE:** moderate
+- **WHAT:** The admin SPA uses Chakra UI v3 (`@chakra-ui/react` with
+  `@emotion/react`). Considered: Park UI (Ark + Panda, zero-runtime CSS),
+  Mantine, Tailwind with a headless kit, and plain CSS.
+- **WHY:** The maintainer's choice. Chakra is batteries-included, so the
+  person building a screen at 10pm picks components rather than assembling
+  them; it is built on Ark UI, the same accessible primitives Park uses, but
+  without Panda's codegen step or Park's 0.x status; and it is one
+  dependency to keep current under the latest-everything policy. Runtime
+  Emotion styling is an accepted cost at this scale. React 19 is within its
+  peer range. Condition stated by the maintainer: pages must stay reasonably
+  fast and SSR must remain possible. Chakra v3 supports SSR via Emotion's
+  cache extraction, and the admin app is client-only regardless; the
+  phase-2 public site's library is left open and will be judged on measured
+  speed when it exists. Park UI (Ark + Panda, zero-runtime) is the fallback
+  there if Chakra's runtime styling proves too slow.
