@@ -8,7 +8,7 @@
 	"exports": {
 		".": "./src/index.ts"
 	},
-	"peerDependencies": {
+	"dependencies": {
 		"spacetimedb": "2.10.*"
 	}
 }

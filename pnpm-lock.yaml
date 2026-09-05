@@ -171,6 +171,12 @@ importers:
         specifier: ^4.129.0
         version: 4.129.0
 
+  packages/bindings:
+    dependencies:
+      spacetimedb:
+        specifier: 2.10.*
+        version: 2.10.0
+
   spacetimedb:
     dependencies:
       spacetimedb:
