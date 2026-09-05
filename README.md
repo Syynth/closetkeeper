@@ -85,6 +85,18 @@ To release the module to production, tag the commit on `main`:
 git tag v0.1.0 && git push origin v0.1.0
 ```
 
+### Secrets and one-time setup
+
+| Where | Name | What |
+|---|---|---|
+| GitHub environments `dev` and `prod` | `SPACETIMEDB_TOKEN` | Token for the identity that publishes. `spacetime login show --token`. |
+| GitHub repository secret | `BOOTSTRAP_STAFF_EMAIL` | Optional. Invited as the first real staff member after every publish. |
+| `spacetimedb/src/config.ts` | `TRUSTED_CLIENT_IDS` | The SpacetimeAuth client ID(s). Not secret; committed. |
+
+Whoever publishes a database first is seeded as its first staff member.
+Browser logins can only link to staff once the SpacetimeAuth project exists
+and its client ID is in `TRUSTED_CLIENT_IDS`.
+
 **Production never receives `--delete-data`.** A schema change that would
 require a migration or destroy rows makes the CLI abort the publish
 non-interactively (verified; see the decision log), so the production job
