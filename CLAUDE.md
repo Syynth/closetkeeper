@@ -35,13 +35,20 @@ a Rust module, and named a React Router version two majors behind. Treat it
 accordingly.
 
 **Settled.** SpacetimeDB as the backend. Cloudflare as the hosting platform.
-TypeScript as the language. React as the UI library. The non-negotiable
-constraints above, the roles table, and the data model principles.
+TypeScript as the language. React as the UI library. TanStack Router for the
+admin SPA, with TanStack Start reserved for the public site. The
+non-negotiable constraints above, the roles table, and the data model
+principles.
 
-**Not settled.** The framework and router around React — React Router,
-TanStack Router, or a plain Vite SPA are all still open. UI and component
-libraries. Testing tools. Branching and deployment process. Any specific
-version number appearing anywhere in this document.
+**Deliberately deferred.** Whether admin and public ship as one Worker
+(TanStack Start with selective SSR, `/admin` subtree client-only) or two
+Workers (static-asset admin SPA + a separate SSR/cron Worker). The admin app
+is built standalone under `apps/admin` so either shape remains possible.
+Decide when phase 2 begins, not before.
+
+**Not settled.** UI and component libraries. Testing tools. Branching and
+deployment process. Any specific version number appearing anywhere in this
+document.
 
 A choice appearing in this file is not evidence it was decided. If it is in
 the "not settled" list, ask rather than assume.
@@ -52,10 +59,17 @@ the "not settled" list, ask rather than assume.
   **Maincloud**. All writes go through reducers. The whole stack is one
   language and one toolchain — module, generated bindings, admin client, and
   Worker — so there is no second runtime to context-switch into.
-- **Frontend:** React Router v8 (framework mode), deployed to Cloudflare Workers
-  with static assets. Not Cloudflare Pages — Workers is the current
-  recommendation for new projects and has feature parity plus Durable Objects,
-  Cron Triggers, and Secrets Store.
+- **Frontend:** React with TanStack Router, built with Vite, deployed to
+  Cloudflare Workers with static assets. Not Cloudflare Pages — Workers is the
+  current recommendation for new projects and has feature parity plus Durable
+  Objects, Cron Triggers, and Secrets Store. TanStack was chosen over React
+  Router because Cloudflare's React Router integration does not support SPA
+  mode, while TanStack supports per-route `ssr: false` — the only option that
+  can serve a client-only admin and an SSR public site from one codebase.
+- **SpacetimeDB client:** the official `spacetimedb/react` hooks
+  (`SpacetimeDBProvider`, `useTable`, `useReducer`), or `spacetimedb/tanstack`
+  if react-query is adopted. Generated bindings live in `packages/bindings`
+  and are committed, so schema changes are visible in review.
 - **Admin UI:** client-side only, direct WebSocket connection to SpacetimeDB.
   No SSR for admin routes.
 - **Public pages:** SSR, rendered from a KV snapshot. Never query SpacetimeDB
