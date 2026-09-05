@@ -72,12 +72,26 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -o pipefail
-          pnpm --filter @closetkeeper/admin exec wrangler versions upload \
-            --name closetkeeper-admin-dev \
-            --preview-alias preview \
-            --tag "pr-${{ github.event.number }}" \
-            --message "PR #${{ github.event.number }} ${{ github.event.pull_request.head.sha }}" \
-            | tee upload.log
+          upload() {
+            pnpm --filter @closetkeeper/admin exec wrangler versions upload \
+              --name closetkeeper-admin-dev \
+              --preview-alias preview \
+              --tag "pr-${{ github.event.number }}" \
+              --message "PR #${{ github.event.number }} ${{ github.event.pull_request.head.sha }}" \
+              2>&1 | tee upload.log
+          }
+          # A version can only be uploaded to a Worker that exists, and the
+          # dev Worker is created by the first merge to main. Until then, the
+          # first preview creates it with a plain deploy (same build, same dev
+          # database) and then uploads the version.
+          if ! upload; then
+            if grep -q "does not yet exist" upload.log; then
+              pnpm --filter @closetkeeper/admin exec wrangler deploy --name closetkeeper-admin-dev
+              upload
+            else
+              exit 1
+            fi
+          fi
           url=$(grep -oE 'https://preview-[a-z0-9.-]+\.workers\.dev' upload.log | head -1 || true)
           echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Comment the preview URL on the PR
