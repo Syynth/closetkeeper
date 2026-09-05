@@ -1,4 +1,4 @@
 {
-  "server": "local",
-  "module-path": "./spacetimedb"
+	"server": "local",
+	"module-path": "./spacetimedb"
 }

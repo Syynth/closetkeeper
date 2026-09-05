@@ -1,18 +1,24 @@
 {
-  "name": "closetkeeper",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Inventory and administration software for a nonprofit clothing closet in Klamath County, Oregon",
-  "type": "module",
-  "packageManager": "pnpm@12.3.4",
-  "engines": {
-    "node": ">=26.8.1"
-  },
-  "scripts": {
-    "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
-    "module:build": "pnpm --filter @closetkeeper/module build",
-    "module:publish:dev": "pnpm --filter @closetkeeper/module publish:dev"
-  },
-  "license": "UNLICENSED"
+	"name": "closetkeeper",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Inventory and administration software for a nonprofit clothing closet in Klamath County, Oregon",
+	"type": "module",
+	"packageManager": "pnpm@12.3.4",
+	"engines": {
+		"node": ">=26.8.1"
+	},
+	"scripts": {
+		"build": "pnpm -r build",
+		"typecheck": "pnpm -r typecheck",
+		"module:build": "pnpm --filter @closetkeeper/module build",
+		"module:publish:dev": "pnpm --filter @closetkeeper/module publish:dev",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write ."
+	},
+	"license": "UNLICENSED",
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.12"
+	}
 }
