@@ -255,23 +255,22 @@ Entries are appended at the bottom, newest last.
   alias is used because SpacetimeAuth redirect URIs must match exactly, so
   one registration covers every preview.
 
-## Chakra UI v3 for the admin app
+## shadcn/ui with Tailwind CSS for the admin app
 - **WHEN:** 2026-09-05
 - **PROJECT:** closetkeeper
 - **SYSTEM:** admin
 - **SCOPE:** moderate
-- **WHAT:** The admin SPA uses Chakra UI v3 (`@chakra-ui/react` with
-  `@emotion/react`). Considered: Park UI (Ark + Panda, zero-runtime CSS),
-  Mantine, Tailwind with a headless kit, and plain CSS.
-- **WHY:** The maintainer's choice. Chakra is batteries-included, so the
-  person building a screen at 10pm picks components rather than assembling
-  them; it is built on Ark UI, the same accessible primitives Park uses, but
-  without Panda's codegen step or Park's 0.x status; and it is one
-  dependency to keep current under the latest-everything policy. Runtime
-  Emotion styling is an accepted cost at this scale. React 19 is within its
-  peer range. Condition stated by the maintainer: pages must stay reasonably
-  fast and SSR must remain possible. Chakra v3 supports SSR via Emotion's
-  cache extraction, and the admin app is client-only regardless; the
-  phase-2 public site's library is left open and will be judged on measured
-  speed when it exists. Park UI (Ark + Panda, zero-runtime) is the fallback
-  there if Chakra's runtime styling proves too slow.
+- **WHAT:** The admin SPA uses Tailwind CSS with shadcn/ui components,
+  copied into the repository and owned as project code. Considered and set
+  aside: Chakra UI v3 (briefly chosen, then reversed), Park UI (Ark +
+  Panda), Mantine, and plain CSS.
+- **WHY:** The maintainer's condition was that pages stay reasonably fast
+  and SSR stays possible. Tailwind is zero-runtime CSS, so there is no
+  style injection cost and nothing SSR-specific to configure, for the
+  admin now or the phase-2 public site later. shadcn components are
+  accessible primitives with styling that lives in the repo, so a screen
+  edited at 10pm has no library abstraction between it and the markup, and
+  there is no component-library version to fall behind on. Cost: more
+  assembly than a batteries-included kit, and the discipline of not
+  drifting the copied components apart. Chakra's runtime Emotion styling
+  was the reason it was reversed.
