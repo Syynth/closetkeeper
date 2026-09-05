@@ -18,16 +18,14 @@ function renderAt(path: string) {
 }
 
 describe("home route, signed out", () => {
-	it("renders the heading and a login button, and opens no database connection", async () => {
+	it("renders the wordmark and the sign-in button, and opens no database connection", async () => {
 		renderAt("/");
 		expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(
 			"Closetkeeper",
 		);
 		expect(
-			await screen.findByRole("button", { name: /log in/i }),
+			await screen.findByRole("button", { name: /^log in$/i }),
 		).toBeInTheDocument();
-		expect(
-			screen.queryByText(/connecting to the database/i),
-		).not.toBeInTheDocument();
+		expect(screen.queryByText(/connecting/i)).not.toBeInTheDocument();
 	});
 });

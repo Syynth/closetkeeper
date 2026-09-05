@@ -2,7 +2,7 @@
 	"name": "@closetkeeper/admin",
 	"version": "0.0.0",
 	"private": true,
-	"description": "Closetkeeper admin SPA \u2014 staff and volunteer interface",
+	"description": "Closetkeeper admin SPA — staff and volunteer interface",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -14,6 +14,11 @@
 	"license": "Apache-2.0",
 	"dependencies": {
 		"@closetkeeper/bindings": "workspace:*",
+		"@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
+		"@fontsource-variable/bricolage-grotesque": "^5.3.0",
+		"@mantine/core": "^9.6.0",
+		"@mantine/form": "^9.6.0",
+		"@mantine/hooks": "^9.6.0",
 		"@tanstack/react-router": "^1.170.32",
 		"oidc-client-ts": "^3.5.0",
 		"react": "^19.2.8",
@@ -31,6 +36,9 @@
 		"@types/react-dom": "^19.2.7",
 		"@vitejs/plugin-react": "^6.1.1",
 		"jsdom": "^30.0.1",
+		"postcss": "^8.5.28",
+		"postcss-preset-mantine": "^1.18.0",
+		"postcss-simple-vars": "^7.0.1",
 		"typescript": "^7.0.2",
 		"vite": "^8.2.2",
 		"wrangler": "^4.129.0"
