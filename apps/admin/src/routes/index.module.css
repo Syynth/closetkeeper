@@ -1,0 +1,24 @@
+.signIn {
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding-top: 2rem;
+	padding-bottom: 3rem;
+}
+
+.title {
+	font-size: clamp(2.6rem, 11vw, 3.6rem);
+	letter-spacing: -0.03em;
+	line-height: 0.98;
+	margin: 0;
+}
+
+.titleAccent {
+	color: var(--mantine-color-pine-7);
+}
+
+.lede {
+	max-width: 24rem;
+	color: var(--mantine-color-bark-7);
+}

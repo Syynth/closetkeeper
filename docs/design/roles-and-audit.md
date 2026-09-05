@@ -1,7 +1,7 @@
 # Design proposal: configurable roles, system administrator, and the audit log
 
-Status: **proposal**, 2026-09-05. Nothing here is built. Decisions taken from
-it go in `docs/decision-log.md`.
+Status: **implemented** 2026-09-05 (PR #7), with the corrections noted
+inline. Decisions taken from it are in `docs/decision-log.md`.
 
 ## Goals
 
@@ -125,7 +125,6 @@ audit_event
   target_table  string              "" when not about one row
   target_id     u64                 0 when not about one row
   details       string              JSON object; see PII rule
-  outcome       string              "ok" | "denied" | "error"
 ```
 
 Private table. Nothing about it is ever public.
@@ -145,12 +144,18 @@ export const inviteStaff = defineAdminReducer({
 });
 ```
 
-The helper: runs `requireStaff`; runs the body; writes one `audit_event`
-with the actor, the action, the body's target, and the args minus redacted
-fields; and if the body throws, records the same event with `outcome:
-"denied"` or `"error"` before rethrowing. A refused attempt is therefore
-also in the log, which is what "treat a missing allowlist check as a
-breach" needs to be detectable.
+The helper: runs `requireStaff`; runs the body; and writes one
+`audit_event` with the actor, the action, the body's target, and the args
+minus redacted fields.
+
+**Correction found while building (2026-09-05):** a reducer that throws
+rolls back everything it did, including any audit row it inserted. This
+was verified against a local instance, not assumed. So `outcome: "denied"`
+events cannot be persisted by the call that denies them, and the
+`outcome` column does not exist. Instead: denied and failed calls go to
+the host log via `console.warn` with the reducer name and staff id only
+(never PII), visible with `spacetime logs`; unknown callers are recorded
+once per connection in the access log.
 
 Every call through the helper also lands in a module-level registry.
 
@@ -203,7 +208,11 @@ access_event
 ```
 
 Written by `clientConnected` on every connection, whatever the outcome, so
-it also serves as the login history for real staff. Anonymous connections
+it also serves as the login history for real staff. Found while building:
+HTTP calls (`spacetime sql`, `spacetime call`) fire `clientConnected` too,
+so CLI activity by the publisher appears here as staff logins, and the
+CLI's own token is issued by SpacetimeAuth with a different audience, so an
+unknown CLI identity classifies as `untrusted_token`. Anonymous connections
 are logged here (identity only), which is cheap and bounded per connection,
 unlike logging every denied reducer call from them.
 

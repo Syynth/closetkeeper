@@ -1,0 +1,126 @@
+.tag {
+	display: inline-flex;
+	align-items: center;
+	min-height: 1.75rem;
+	padding: 0.15rem 0.6rem 0.2rem;
+	font-family: var(--mantine-font-family-headings);
+	font-weight: 700;
+	font-size: 0.85rem;
+	letter-spacing: 0.02em;
+	line-height: 1;
+	white-space: nowrap;
+	color: var(--mantine-color-bark-9);
+	background: var(--mantine-color-tape-4);
+	/* A hand-cut corner: the tape was torn, not printed. */
+	clip-path: polygon(
+		0 0,
+		calc(100% - 0.45rem) 0,
+		100% 0.45rem,
+		100% 100%,
+		0.35rem 100%,
+		0 calc(100% - 0.35rem)
+	);
+}
+
+.tag[data-tone="pine"] {
+	background: var(--mantine-color-pine-7);
+	color: var(--mantine-color-white);
+}
+
+.tag[data-tone="clay"] {
+	background: var(--mantine-color-clay-6);
+	color: var(--mantine-color-white);
+}
+
+.tag[data-tone="muted"] {
+	background: var(--mantine-color-bark-1);
+	color: var(--mantine-color-bark-6);
+}
+
+.marqueeStack {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	width: 100%;
+}
+
+.marquee {
+	width: 100%;
+	overflow: hidden;
+	mask-image: linear-gradient(
+		90deg,
+		transparent,
+		#000 12%,
+		#000 88%,
+		transparent
+	);
+}
+
+.track {
+	display: flex;
+	gap: 0.6rem;
+	width: max-content;
+	padding: 0.25rem 0;
+}
+
+.marquee[data-direction="left"] .track {
+	animation: slide-left 70s linear infinite;
+}
+
+.marquee[data-direction="right"] .track {
+	animation: slide-right 70s linear infinite;
+}
+
+.blink {
+	animation-name: blink;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+}
+
+@keyframes slide-left {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+@keyframes slide-right {
+	from {
+		transform: translateX(-50%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+/*
+ * One tag's turn. About six tags per row are on screen at once, so for three
+ * visible green tags across two rows a quarter of all tags are green at any
+ * moment: green for 25% of the shared cycle, with a crossfade each way.
+ */
+@keyframes blink {
+	0%,
+	2% {
+		background: var(--mantine-color-tape-4);
+		color: var(--mantine-color-bark-9);
+	}
+	5%,
+	27% {
+		background: var(--mantine-color-pine-7);
+		color: var(--mantine-color-white);
+	}
+	30%,
+	100% {
+		background: var(--mantine-color-tape-4);
+		color: var(--mantine-color-bark-9);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.track,
+	.blink {
+		animation: none;
+	}
+}

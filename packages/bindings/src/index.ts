@@ -47,6 +47,8 @@ import UpdateRoleReducer from "./update_role_reducer";
 
 // Import all table schema definitions
 import MyStaffRow from "./my_staff_table";
+import RoleOptionsRow from "./role_options_table";
+import StaffDirectoryRow from "./staff_directory_table";
 
 /** Type-only namespace exports for generated type groups. */
 
@@ -59,6 +61,20 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyStaffRow),
+  roleOptions: __table({
+    name: 'role_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, RoleOptionsRow),
+  staffDirectory: __table({
+    name: 'staff_directory',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, StaffDirectoryRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */

@@ -4,7 +4,9 @@ import {
 	type Ctx,
 	noteConnection,
 	requireSensitiveIfProtected,
+	resolveStaff,
 	roleCapabilities,
+	roleHoldsProtected,
 	wouldLockOut,
 } from "./auth";
 import {
@@ -139,6 +141,85 @@ export const myStaff = spacetimedb.view(
 			active: staff.active,
 			capabilities: capabilities.sort(),
 		};
+	},
+);
+
+/** One staff member as seen by someone who manages staff. */
+const StaffDirectoryRow = t.row("StaffDirectoryEntry", {
+	staff_id: t.u64().primaryKey(),
+	person_id: t.u64(),
+	display_name: t.string(),
+	email: t.string(),
+	role_key: t.string(),
+	role_label: t.string(),
+	active: t.bool(),
+	invited_at: t.timestamp(),
+});
+
+/**
+ * Every staff member, for callers holding staff.manage; nothing for anyone
+ * else. Staff names and emails are staff data, not family data, and the
+ * people who manage staff need them to do it.
+ */
+export const staffDirectory = spacetimedb.view(
+	{ name: "staff_directory", public: true },
+	t.array(StaffDirectoryRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null || !me.capabilities.has("staff.manage")) return [];
+		const out = [];
+		for (const s of ctx.db.staff_member.iter()) {
+			const person = ctx.db.person.id.find(s.person_id);
+			const role = ctx.db.role.id.find(s.role_id);
+			if (person === null || role === null) continue;
+			out.push({
+				staff_id: s.id,
+				person_id: s.person_id,
+				display_name: person.display_name,
+				email: person.email,
+				role_key: role.key,
+				role_label: role.label,
+				active: s.active,
+				invited_at: s.invited_at,
+			});
+		}
+		return out;
+	},
+);
+
+/** A role as offered in the invite form. */
+const RoleOptionRow = t.row("RoleOption", {
+	role_id: t.u64().primaryKey(),
+	key: t.string(),
+	label: t.string(),
+	description: t.string(),
+	system: t.bool(),
+	protected: t.bool(),
+});
+
+/**
+ * The roles a caller may assign. Everyone with staff.manage sees every
+ * role; the `protected` flag tells the UI which ones additionally need
+ * staff.manage_sensitive, so it can explain a refusal before it happens.
+ */
+export const roleOptions = spacetimedb.view(
+	{ name: "role_options", public: true },
+	t.array(RoleOptionRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null || !me.capabilities.has("staff.manage")) return [];
+		const out = [];
+		for (const role of ctx.db.role.iter()) {
+			out.push({
+				role_id: role.id,
+				key: role.key,
+				label: role.label,
+				description: role.description,
+				system: role.system,
+				protected: roleHoldsProtected(ctx, role.id),
+			});
+		}
+		return out;
 	},
 );
 
