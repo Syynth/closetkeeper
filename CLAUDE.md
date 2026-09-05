@@ -22,7 +22,7 @@ decision from the maintainer.
 3. **No payment card data, ever.** The app does not process payments. Financial
    records live in the donation platform and QuickBooks, not here.
 4. **No PII in logs.** No names, phone numbers, addresses, or emails in
-   `log::info!` or equivalent. Log identifiers, not people.
+   `console.info` or equivalent. Log identifiers, not people.
 5. **Aggregate counts published publicly must be suppressed below a threshold**
    of 3, and never broken down by school or neighborhood. In a county this size
    a specific count can identify a specific child.
