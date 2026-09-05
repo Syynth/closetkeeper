@@ -45,15 +45,36 @@ Install the SpacetimeDB CLI from [spacetimedb.com/install](https://spacetimedb.c
 pnpm install
 ```
 
-Run a local SpacetimeDB in one terminal and the admin app in another:
+Copy `apps/admin/.env.example` to `apps/admin/.env.local`. The defaults point
+at a local database; the commented lines point at the Maincloud dev database.
+
+Run a local SpacetimeDB in one terminal, publish the module to it, and invite
+yourself. Whoever publishes is the first staff member, so the invite is
+authorized:
 
 ```bash
 pnpm module:local
 ```
 
 ```bash
+pnpm module:publish:local
+```
+
+```bash
+spacetime call closetkeeper-local --server local invite_staff '"you@example.org"' '"Your Name"' '"staff"' --no-config
+```
+
+Then start the admin app on [http://localhost:7070](http://localhost:7070)
+and log in with that email. The magic link comes from SpacetimeAuth; the
+local instance validates the token against SpacetimeAuth's published keys, so
+it needs internet access.
+
+```bash
 pnpm admin:dev
 ```
+
+The local database is in-memory and disappears when `pnpm module:local`
+stops, so the publish and invite are repeated each session.
 
 ## Checks
 

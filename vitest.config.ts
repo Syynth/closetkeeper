@@ -28,6 +28,14 @@ export default defineConfig({
 					include: ["src/**/*.test.{ts,tsx}"],
 					environment: "jsdom",
 					setupFiles: ["./src/test-setup.ts"],
+					// The app refuses to start without these. Tests never sign in,
+					// so no request ever reaches the authority or the database.
+					env: {
+						VITE_SPACETIMEDB_HOST: "ws://localhost:3000",
+						VITE_SPACETIMEDB_DB_NAME: "closetkeeper-test",
+						VITE_SPACETIMEAUTH_AUTHORITY: "https://auth.invalid/oidc",
+						VITE_SPACETIMEAUTH_CLIENT_ID: "client_test",
+					},
 				},
 			},
 		],

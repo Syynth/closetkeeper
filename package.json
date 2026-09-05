@@ -17,6 +17,7 @@
 		"admin:dev": "pnpm --filter @closetkeeper/admin dev",
 		"admin:build": "pnpm --filter @closetkeeper/admin build",
 		"module:local": "spacetime start --in-memory --listen-addr 127.0.0.1:3000",
+		"module:publish:local": "spacetime publish closetkeeper-local --server local --module-path spacetimedb --delete-data=on-conflict --yes",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"lint": "biome check .",

@@ -17,11 +17,17 @@ function renderAt(path: string) {
 	return render(<RouterProvider router={router} />);
 }
 
-describe("home route", () => {
-	it("renders the app heading", async () => {
+describe("home route, signed out", () => {
+	it("renders the heading and a login button, and opens no database connection", async () => {
 		renderAt("/");
 		expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(
 			"Closetkeeper",
 		);
+		expect(
+			await screen.findByRole("button", { name: /log in/i }),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(/connecting to the database/i),
+		).not.toBeInTheDocument();
 	});
 });

@@ -1,7 +1,7 @@
 import { SenderError, t } from "spacetimedb/server";
 import { noteConnection, requireStaff } from "./auth";
 import { isRole, looksLikeEmail, normalizeEmail } from "./auth-rules";
-import spacetimedb from "./schema";
+import spacetimedb, { staffMemberRow } from "./schema";
 
 export default spacetimedb;
 
@@ -44,6 +44,22 @@ export const init = spacetimedb.init((ctx) => {
 		invited_by: SYSTEM,
 	});
 });
+
+/**
+ * The caller's own staff row, or nothing. Every table here is private, so
+ * this per-user view is how the admin app learns whether the person in front
+ * of it is staff and which role they hold. It exposes exactly one row, the
+ * caller's, and nothing about anyone else.
+ */
+export const myStaff = spacetimedb.view(
+	{ name: "my_staff", public: true },
+	t.option(staffMemberRow),
+	(ctx) => {
+		const link = ctx.db.auth_provider_link.identity.find(ctx.sender);
+		if (link === null) return undefined;
+		return ctx.db.staff_member.person_id.find(link.person_id) ?? undefined;
+	},
+);
 
 export const onConnect = spacetimedb.clientConnected((ctx) => {
 	noteConnection(ctx);

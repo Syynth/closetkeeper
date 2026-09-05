@@ -21,6 +21,9 @@ export const AuthProviderLink = __t.object("AuthProviderLink", {
 });
 export type AuthProviderLink = __Infer<typeof AuthProviderLink>;
 
+export const MyStaff = __t.object("MyStaff", {});
+export type MyStaff = __Infer<typeof MyStaff>;
+
 export const Person = __t.object("Person", {
   id: __t.u64(),
   displayName: __t.string(),
