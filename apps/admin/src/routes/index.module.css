@@ -1,5 +1,9 @@
 .signIn {
-	padding-top: clamp(2.5rem, 12vh, 6rem);
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding-top: 2rem;
 	padding-bottom: 3rem;
 }
 

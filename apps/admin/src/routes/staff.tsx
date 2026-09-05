@@ -149,7 +149,7 @@ function InviteForm({
 			value: r.key,
 			label:
 				r.protected && !canAssignProtected
-					? `${r.label} (needs a super-admin)`
+					? `${r.label} (needs a system administrator)`
 					: r.label,
 			disabled: r.protected && !canAssignProtected,
 		}));

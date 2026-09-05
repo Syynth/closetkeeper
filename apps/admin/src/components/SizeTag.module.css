@@ -37,30 +37,82 @@
 	color: var(--mantine-color-bark-6);
 }
 
-.strip {
+.marqueeStack {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem 0.6rem;
-	max-width: 26rem;
-	opacity: 0.95;
+	flex-direction: column;
+	gap: 0.6rem;
+	width: 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	.strip .tag {
-		animation: settle 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-	}
-	.strip .tag:nth-child(n) {
-		animation-delay: calc(var(--i, 0) * 30ms);
-	}
+.marquee {
+	width: 100%;
+	overflow: hidden;
+	mask-image: linear-gradient(
+		90deg,
+		transparent,
+		#000 12%,
+		#000 88%,
+		transparent
+	);
 }
 
-@keyframes settle {
+.track {
+	display: flex;
+	gap: 0.6rem;
+	width: max-content;
+	padding: 0.25rem 0;
+}
+
+.marquee[data-direction="left"] .track {
+	animation: slide-left 42s linear infinite;
+}
+
+.marquee[data-direction="right"] .track {
+	animation: slide-right 42s linear infinite;
+}
+
+.blink {
+	animation-name: blink;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+}
+
+@keyframes slide-left {
 	from {
-		opacity: 0;
-		translate: 0 6px;
+		transform: translateX(0);
 	}
 	to {
+		transform: translateX(-50%);
+	}
+}
+
+@keyframes slide-right {
+	from {
+		transform: translateX(-50%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes blink {
+	0%,
+	62% {
 		opacity: 1;
-		translate: 0 0;
+	}
+	70%,
+	84% {
+		opacity: 0.12;
+	}
+	92%,
+	100% {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.track,
+	.blink {
+		animation: none;
 	}
 }

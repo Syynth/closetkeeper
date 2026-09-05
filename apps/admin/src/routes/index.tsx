@@ -12,7 +12,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "react-oidc-context";
 import { useSpacetimeDB } from "spacetimedb/react";
 import { Shell, useMyStaff, Wordmark } from "../components/Shell";
-import { SizeStrip, SizeTag } from "../components/SizeTag";
+import { SizeMarquee, SizeTag } from "../components/SizeTag";
 import { ConnectedToDatabase } from "../db";
 import classes from "./index.module.css";
 
@@ -51,8 +51,8 @@ function Home() {
 }
 
 /**
- * The sign-in page has one job: get an invited person in. The strip of
- * sizes says what this place is without a paragraph.
+ * The sign-in page is a door, not a brochure: eyebrow, wordmark, the
+ * sizes, one button. Copy appears only after tapping or on error.
  */
 function SignIn({
 	onSignIn,
@@ -63,27 +63,15 @@ function SignIn({
 }) {
 	return (
 		<Container size="xs" className={classes.signIn}>
-			<Stack gap="lg">
-				<div>
-					<SizeTag>Klamath County</SizeTag>
-				</div>
+			<Stack gap="xl" align="center">
+				<SizeTag>Staff &amp; volunteers</SizeTag>
 				<Title order={1} className={classes.title}>
 					Closet<span className={classes.titleAccent}>keeper</span>
 				</Title>
-				<Text size="lg" className={classes.lede}>
-					Log donations, keep the shelves counted, and get the right sizes to
-					the right kids.
-				</Text>
-				<SizeStrip />
-				<Stack gap="xs" mt="sm">
-					<Button onClick={onSignIn} fullWidth>
-						Email me a sign-in link
-					</Button>
-					<Text size="sm" c="dimmed">
-						Only invited staff and volunteers can sign in. No password; the link
-						is the key.
-					</Text>
-				</Stack>
+				<SizeMarquee />
+				<Button onClick={onSignIn} fullWidth>
+					Log in
+				</Button>
 				{error ? (
 					<Alert color="clay" title="Sign-in didn't complete" role="alert">
 						{error}

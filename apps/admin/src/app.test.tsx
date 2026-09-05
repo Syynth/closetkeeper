@@ -24,7 +24,7 @@ describe("home route, signed out", () => {
 			"Closetkeeper",
 		);
 		expect(
-			await screen.findByRole("button", { name: /email me a sign-in link/i }),
+			await screen.findByRole("button", { name: /^log in$/i }),
 		).toBeInTheDocument();
 		expect(screen.queryByText(/connecting/i)).not.toBeInTheDocument();
 	});
