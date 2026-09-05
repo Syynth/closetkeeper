@@ -1,5 +1,13 @@
 packages:
   - spacetimedb
-  # - web        # added when the React Router app is scaffolded
+  - apps/*
+  - packages/*
+
+# Native build scripts these packages need to run on install.
+allowBuilds:
+  esbuild: true
+  lightningcss: true
+  workerd: true # wrangler's local runtime; downloads a platform binary on install
+
 minimumReleaseAgeExclude:
   - spacetimedb@2.10.0

@@ -1,0 +1,13 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "closetkeeper-admin",
+	"compatibility_date": "2026-09-05",
+	// Static-asset-only Worker. There is deliberately no `main`: the admin UI
+	// talks to SpacetimeDB directly over WebSocket from the browser, so this
+	// Worker has no server-side code and therefore no server-side attack
+	// surface. If a `main` is ever added, that decision needs a reason.
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "single-page-application"
+	}
+}

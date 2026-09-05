@@ -1,0 +1,30 @@
+{
+	"name": "@closetkeeper/admin",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Closetkeeper admin SPA — staff and volunteer interface",
+	"type": "module",
+	"scripts": {
+		"dev": "vite --port 5173",
+		"build": "vite build",
+		"preview": "vite preview --port 5173",
+		"typecheck": "tsc --noEmit",
+		"deploy": "vite build && wrangler deploy"
+	},
+	"license": "UNLICENSED",
+	"dependencies": {
+		"@tanstack/react-router": "^1.170.32",
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8",
+		"spacetimedb": "2.10.*"
+	},
+	"devDependencies": {
+		"@tanstack/router-plugin": "^1.168.35",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.7",
+		"@vitejs/plugin-react": "^6.1.1",
+		"typescript": "^7.0.2",
+		"vite": "^8.2.2",
+		"wrangler": "^4.129.0"
+	}
+}
