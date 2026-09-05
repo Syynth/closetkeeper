@@ -286,20 +286,20 @@ Entries are appended at the bottom, newest last.
   reporting also come from this table, so it must survive both purges and
   people.
 
-## Roles: president, secretary, treasurer, director, staff, volunteer
+## Roles: president, secretary, treasurer, staff, volunteer
 - **WHEN:** 2026-09-05
 - **PROJECT:** closetkeeper
 - **SYSTEM:** module
 - **SCOPE:** moderate
 - **WHAT:** These are seeded as system roles alongside the technical
   `super_admin`. Every role except volunteer sees family data; treasurer is
-  the only role with `financial.read`. `staff` and `director` are two names
-  for the same capability bundle.
+  the only role with `financial.read`. A `director` role, equivalent to
+  staff, was considered and deferred until it is needed.
 - **WHY:** These are the org's real roles as the maintainer knows them
-  today; director is equivalent to general staff, and keeping both names
-  matches how people describe themselves. System roles cannot be deleted
-  later, so the commitment is to the names; a super-admin can adjust any
-  bundle afterwards. Volunteers being the only role without family data is
+  today. Director is not doing anything yet, and because roles are rows it
+  can be added later with a reducer call rather than a republish. System
+  roles cannot be deleted later, so the commitment is to the names; a
+  super-admin can adjust any bundle afterwards. Volunteers being the only role without family data is
   CLAUDE.md constraint 2 expressed as a seed.
 
 ## A separate access log records every connection; IPs are not available
@@ -312,7 +312,8 @@ Entries are appended at the bottom, newest last.
   separate from the audit log. Denied reducer calls are audited only when
   the caller resolved to staff; unknown callers appear in the access log
   instead. Access events are purged on a fixed interval; audit events are
-  not.
+  not. The email of a trusted-but-uninvited login is stored, purged on the
+  same interval, and shown only to super-admins.
 - **WHY:** The maintainer wants to know who is trying to get in. The
   maintainer asked for IP addresses too; the 2.10 reducer context exposes
   only sender, timestamp, connection id, and JWT claims, so IPs cannot be

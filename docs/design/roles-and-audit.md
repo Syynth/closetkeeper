@@ -52,24 +52,22 @@ staff_member
 ```
 
 `init` seeds the system roles. The org's real roles (2026-09-05, from the
-maintainer) are president, secretary, treasurer, director, and volunteer;
-director is equivalent to general staff. `super_admin` is a technical role
+maintainer) are president, secretary, treasurer, staff, and volunteer. `super_admin` is a technical role
 for bootstrap and recovery, not an org title.
 
 | role | seeded capabilities | notes |
 |---|---|---|
 | `super_admin` | all | publisher and bootstrap email; technical |
 | `president` | all | the org's top officer |
-| `director` | inventory.*, donation.*, family.*, staff.manage | board director; same bundle as staff |
-| `staff` | inventory.*, donation.*, family.*, staff.manage | employees; same bundle as director |
+| `staff` | inventory.*, donation.*, family.*, staff.manage | general staff |
 | `secretary` | inventory.*, donation.*, family.*, staff.manage | records and appointments |
 | `treasurer` | inventory.*, donation.*, family.*, financial.read | the only role with financials |
 | `volunteer` | inventory.*, donation.* | **never family data** (constraint 2) |
 
 Confirmed by the maintainer 2026-09-05: every officer and staff role sees
-family data; volunteer is the only role that does not. `staff` and
-`director` are two names for one bundle because that is how people
-describe themselves.
+family data; volunteer is the only role that does not. A `director` role
+(equivalent to staff) is deferred until it is needed; since roles are rows,
+adding it later is a reducer call, not a republish.
 
 Seeded bundles are starting points; a super-admin can adjust any role's
 capabilities later (subject to the protected-capability rule). System
@@ -225,11 +223,10 @@ data is ever needed:
 Retention: access events are purged after a fixed interval (proposal: 90
 days), unlike audit events, which are kept.
 
-**Open:** whether to store the email for trusted-but-uninvited logins. It is
+**Decided:** the email of a trusted-but-uninvited login is stored. It is
 the one field that makes "someone tried to get in" actionable (invite them,
-or don't), but it is PII from a person who is not staff. Proposal: store it,
-purge with the 90-day rule, and never surface it outside the super-admin
-screen.
+or don't). It is PII from a person who is not staff, so it is purged with
+the 90-day rule and never surfaced outside the super-admin screen.
 
 ## Provenance (for later, but shaped now)
 
@@ -258,13 +255,15 @@ in that every movement is created through an audited reducer.
 2. **Denied reducer calls are audited only for resolved staff.** Anonymous
    and unknown callers are recorded once per connection in the separate
    access log instead, so the audit log cannot be spammed.
-3. **Roles:** president, secretary, treasurer, director, staff, volunteer,
-   plus the technical super_admin. Every role but volunteer sees family
+3. **Roles:** president, secretary, treasurer, staff, volunteer, plus the
+   technical super_admin. `director` is deferred. Every role but volunteer sees family
    data. See the seed table above.
 4. **An access log exists, separate from the audit log**, recording every
    connection at the identity level. IPs are not available to the module.
 
+5. **The access log stores the email of trusted-but-uninvited logins**,
+   purged on the 90-day rule and shown only on the super-admin screen.
+
 ## Still open
 
-- Whether the access log stores the email of trusted-but-uninvited logins
-  (see the access log section).
+Nothing. The proposal is fully specified as of 2026-09-05.
