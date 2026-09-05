@@ -13,5 +13,5 @@ import {
 export default {
   email: __t.string(),
   displayName: __t.string(),
-  role: __t.string(),
+  roleKey: __t.string(),
 };

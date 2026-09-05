@@ -11,10 +11,10 @@ import {
 } from "spacetimedb";
 
 export default __t.row({
-  id: __t.u64().primaryKey(),
+  staffId: __t.u64().primaryKey().name("staff_id"),
   personId: __t.u64().name("person_id"),
-  role: __t.string(),
+  roleKey: __t.string().name("role_key"),
+  roleLabel: __t.string().name("role_label"),
   active: __t.bool(),
-  invitedAt: __t.timestamp().name("invited_at"),
-  invitedBy: __t.u64().name("invited_by"),
+  capabilities: __t.array(__t.string()),
 });

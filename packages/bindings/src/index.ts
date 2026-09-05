@@ -34,9 +34,14 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import CreateRoleReducer from "./create_role_reducer";
+import DeleteRoleReducer from "./delete_role_reducer";
+import GrantCapabilityReducer from "./grant_capability_reducer";
 import InviteStaffReducer from "./invite_staff_reducer";
+import RevokeCapabilityReducer from "./revoke_capability_reducer";
 import SetStaffActiveReducer from "./set_staff_active_reducer";
 import SetStaffRoleReducer from "./set_staff_role_reducer";
+import UpdateRoleReducer from "./update_role_reducer";
 
 // Import all procedure arg schemas
 
@@ -58,9 +63,14 @@ const tablesSchema = __schema({
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("create_role", CreateRoleReducer),
+  __reducerSchema("delete_role", DeleteRoleReducer),
+  __reducerSchema("grant_capability", GrantCapabilityReducer),
   __reducerSchema("invite_staff", InviteStaffReducer),
+  __reducerSchema("revoke_capability", RevokeCapabilityReducer),
   __reducerSchema("set_staff_active", SetStaffActiveReducer),
   __reducerSchema("set_staff_role", SetStaffRoleReducer),
+  __reducerSchema("update_role", UpdateRoleReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
