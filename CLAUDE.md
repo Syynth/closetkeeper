@@ -33,7 +33,7 @@ decision from the maintainer.
   **Maincloud**. All writes go through reducers. The whole stack is one
   language and one toolchain — module, generated bindings, admin client, and
   Worker — so there is no second runtime to context-switch into.
-- **Frontend:** React Router v7 (framework mode), deployed to Cloudflare Workers
+- **Frontend:** React Router v8 (framework mode), deployed to Cloudflare Workers
   with static assets. Not Cloudflare Pages — Workers is the current
   recommendation for new projects and has feature parity plus Durable Objects,
   Cron Triggers, and Secrets Store.
@@ -46,6 +46,19 @@ General SpacetimeDB reference material — reducer semantics, determinism rules,
 client subscription patterns — lives in [`docs/spacetimedb-guide.md`](docs/spacetimedb-guide.md),
 copied from the CLI template. It is upstream documentation, not project policy.
 Where the two disagree, this file wins.
+
+## Dependency policy
+
+**Everything runs on the latest version available.** Node, pnpm, the
+SpacetimeDB CLI, TypeScript, and every package. This is deliberate: a small
+project that falls behind gradually becomes a project nobody can upgrade,
+and the maintainer would rather absorb small breakages continuously than one
+large one in two years.
+
+**Downgrades require explicit maintainer sign-off.** If a dependency forces
+an older version of something else, do not quietly pin backwards. Surface the
+conflict, name what breaks, and ask. Prefer a different tool that works at
+current versions over a downgrade.
 
 ## Phasing
 
