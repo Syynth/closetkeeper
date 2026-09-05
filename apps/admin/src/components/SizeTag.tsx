@@ -93,7 +93,8 @@ function MarqueeRow({
 		...sizes.map((s) => ({ s, copy: "b" })),
 	];
 	// Turns are spread evenly across the cycle but handed out in a scrambled
-	// order, so about three tags are green at once and neighbours rarely are.
+	// order, so a quarter of the tags are green at once (about three of the
+	// visible ones) and neighbours rarely are.
 	const turns = doubled
 		.map((_, i) => ({ i, r: jitter(i, seed) }))
 		.sort((a, b) => a.r - b.r)

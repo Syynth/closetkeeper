@@ -95,7 +95,11 @@
 	}
 }
 
-/* One tag's turn: green for ~11% of the shared cycle, with a crossfade each way. */
+/*
+ * One tag's turn. About six tags per row are on screen at once, so for three
+ * visible green tags across two rows a quarter of all tags are green at any
+ * moment: green for 25% of the shared cycle, with a crossfade each way.
+ */
 @keyframes blink {
 	0%,
 	2% {
@@ -103,11 +107,11 @@
 		color: var(--mantine-color-bark-9);
 	}
 	5%,
-	12% {
+	27% {
 		background: var(--mantine-color-pine-7);
 		color: var(--mantine-color-white);
 	}
-	15%,
+	30%,
 	100% {
 		background: var(--mantine-color-tape-4);
 		color: var(--mantine-color-bark-9);
