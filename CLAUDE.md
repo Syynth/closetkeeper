@@ -36,7 +36,8 @@ were made. Every decision below has a dated entry with its reasoning in
 [`docs/decision-log.md`](docs/decision-log.md); when this file and the log
 disagree, the more recent one wins and the other gets fixed.
 
-**Settled.** SpacetimeDB as the backend, on Maincloud. Cloudflare Workers as
+**Settled.** SpacetimeDB as the backend, on Maincloud. Mantine as the UI
+library. Cloudflare Workers as
 the hosting platform, deployed from GitHub Actions. TypeScript everywhere,
 including the module. React with TanStack Router for the admin SPA, with
 TanStack Start reserved for the public site. SpacetimeAuth (magic link) for
@@ -53,8 +54,8 @@ Workers (static-asset admin SPA + a separate SSR/cron Worker). The admin app
 is built standalone under `apps/admin` so either shape remains possible.
 Decide when phase 2 begins, not before.
 
-**Not settled.** UI and component libraries. Any specific version number
-appearing anywhere in this document — everything runs latest, see below.
+**Not settled.** Any specific version number appearing anywhere in this
+document — everything runs latest, see below.
 
 A choice appearing in this file is not evidence it was decided. If it is in
 the "not settled" list, ask rather than assume.
@@ -218,15 +219,25 @@ stable identity and **no authorization whatsoever**.
 
 ### Roles
 
-| Role      | Inventory | Donation intake | Requests / families | Financial |
-|-----------|-----------|-----------------|---------------------|-----------|
-| volunteer | yes       | yes             | **no**              | no        |
-| staff     | yes       | yes             | yes                 | no        |
-| treasurer | read      | read            | **no**              | read      |
+Roles are rows (`role`, `role_capability`), seeded by `init` and adjustable
+by a super-admin without a republish. Capabilities are code
+(`spacetimedb/src/auth-rules.ts`). Seeded roles:
 
-Volunteers are often community members who know the families personally. The
-restriction is what lets the org recruit help without asking families to accept
-that neighbors will see their names.
+| Role        | Inventory | Donations | Families | Financial | Staff mgmt |
+|-------------|-----------|-----------|----------|-----------|------------|
+| super_admin | yes       | yes       | yes      | yes       | yes, incl. protected |
+| president   | yes       | yes       | yes      | yes       | yes, incl. protected |
+| staff       | yes       | yes       | yes      | no        | yes        |
+| secretary   | yes       | yes       | yes      | no        | yes        |
+| treasurer   | yes       | yes       | yes      | read      | no         |
+| volunteer   | yes       | yes       | **no**   | no        | no         |
+
+Family data and role management are **protected capabilities**: only a
+holder of `staff.manage_sensitive` (super_admin, president) can grant them
+or place someone in a role that has them. Volunteers are often community
+members who know the families personally. The restriction is what lets the
+org recruit help without asking families to accept that neighbors will see
+their names. A `director` role (same as staff) is deferred until needed.
 
 ## Public snapshot pipeline
 
@@ -279,8 +290,12 @@ Suppression logic belongs in the cron job or a reducer — never in the template
 ## Code conventions
 
 - All writes through reducers. No direct table mutation from clients.
-- **Every admin reducer starts with `requireStaff(ctx, capability)`** from
-  `spacetimedb/src/auth.ts`. No exceptions, no other authorization path.
+- **Every admin reducer is declared with `defineAdminReducer`** from
+  `spacetimedb/src/admin-reducer.ts`, which applies `requireStaff` for the
+  declared capability and writes the audit row. Never call
+  `spacetimedb.reducer` directly for anything a client can invoke; the
+  reducer guardrail test fails CI if you do. Arguments that are personal
+  (emails, names) go in `redact`.
 - **Tables are private unless allowlisted** in
   `spacetimedb/test/schema-guardrail.test.ts` with a reason. The guardrail
   fails CI otherwise. Clients see a private table's rows only through a
