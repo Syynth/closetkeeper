@@ -29,16 +29,23 @@ decision from the maintainer.
 
 ## What in this document is actually settled
 
-This file began as notes from a brainstorming session. Not everything in it
-was decided, and several specifics were wrong on first contact — it called for
-a Rust module, and named a React Router version two majors behind. Treat it
-accordingly.
+This file began as notes from a brainstorming session and was wrong on first
+contact more than once — it called for a Rust module, and named a React
+Router version two majors behind. It has since been corrected as decisions
+were made. Every decision below has a dated entry with its reasoning in
+[`docs/decision-log.md`](docs/decision-log.md); when this file and the log
+disagree, the more recent one wins and the other gets fixed.
 
-**Settled.** SpacetimeDB as the backend. Cloudflare as the hosting platform.
-TypeScript as the language. React as the UI library. TanStack Router for the
-admin SPA, with TanStack Start reserved for the public site. The
-non-negotiable constraints above, the roles table, and the data model
-principles.
+**Settled.** SpacetimeDB as the backend, on Maincloud. Cloudflare Workers as
+the hosting platform, deployed from GitHub Actions. TypeScript everywhere,
+including the module. React with TanStack Router for the admin SPA, with
+TanStack Start reserved for the public site. SpacetimeAuth (magic link) for
+staff login, with authorization entirely in the module's allowlist. Vitest,
+with module tests as integration tests against a local instance rather than
+a mock, plus a schema guardrail. Biome for lint and format. Public repository
+under Apache-2.0, changes via pull request with CI required. Production
+releases on `v*` tags. The non-negotiable constraints above, the roles table,
+and the data model principles.
 
 **Deliberately deferred.** Whether admin and public ship as one Worker
 (TanStack Start with selective SSR, `/admin` subtree client-only) or two
@@ -46,14 +53,8 @@ Workers (static-asset admin SPA + a separate SSR/cron Worker). The admin app
 is built standalone under `apps/admin` so either shape remains possible.
 Decide when phase 2 begins, not before.
 
-**Also settled.** Testing: Vitest, with module tests run as integration tests
-against a local `spacetime start --in-memory` instance rather than a mock, and
-a schema guardrail test that fails if any table is public without being
-allowlisted. Repository: public, Apache-2.0. See `docs/decision-log.md` for
-the reasoning behind each of these.
-
-**Not settled.** UI and component libraries. Branching rules. Any specific
-version number appearing anywhere in this document.
+**Not settled.** UI and component libraries. Any specific version number
+appearing anywhere in this document — everything runs latest, see below.
 
 A choice appearing in this file is not evidence it was decided. If it is in
 the "not settled" list, ask rather than assume.
@@ -65,16 +66,19 @@ the "not settled" list, ask rather than assume.
   language and one toolchain — module, generated bindings, admin client, and
   Worker — so there is no second runtime to context-switch into.
 - **Frontend:** React with TanStack Router, built with Vite, deployed to
-  Cloudflare Workers with static assets. Not Cloudflare Pages — Workers is the
-  current recommendation for new projects and has feature parity plus Durable
-  Objects, Cron Triggers, and Secrets Store. TanStack was chosen over React
-  Router because Cloudflare's React Router integration does not support SPA
-  mode, while TanStack supports per-route `ssr: false` — the only option that
-  can serve a client-only admin and an SSR public site from one codebase.
+  Cloudflare Workers as static assets from GitHub Actions (not Cloudflare
+  Pages, and not Workers Builds — see Environments below). The admin Worker
+  has no `main`: it serves files and nothing else, so it has no server-side
+  attack surface. TanStack was chosen over React Router because Cloudflare's
+  React Router integration does not support SPA mode, while TanStack supports
+  per-route `ssr: false` — the only option that can serve a client-only admin
+  and an SSR public site from one codebase.
 - **SpacetimeDB client:** the official `spacetimedb/react` hooks
   (`SpacetimeDBProvider`, `useTable`, `useReducer`), or `spacetimedb/tanstack`
   if react-query is adopted. Generated bindings live in `packages/bindings`
-  and are committed, so schema changes are visible in review.
+  and are committed, so schema changes are visible in review. The admin
+  connects only after sign-in, with the OIDC ID token; there is no anonymous
+  connection in the admin app.
 - **Admin UI:** client-side only, direct WebSocket connection to SpacetimeDB.
   No SSR for admin routes.
 - **Public pages:** SSR, rendered from a KV snapshot. Never query SpacetimeDB
@@ -84,6 +88,34 @@ General SpacetimeDB reference material — reducer semantics, determinism rules,
 client subscription patterns — lives in [`docs/spacetimedb-guide.md`](docs/spacetimedb-guide.md),
 copied from the CLI template. It is upstream documentation, not project policy.
 Where the two disagree, this file wins.
+
+## Environments and deployment
+
+Nothing is deployed from a terminal. Module and admin share triggers so they
+reach production together.
+
+| Trigger | Module (Maincloud) | Admin (Cloudflare Worker) |
+|---|---|---|
+| pull request | — | preview version, alias `preview`, URL commented on the PR |
+| merge to `main` | `closetkeeper-dev` | `closetkeeper-admin-dev` → dev database |
+| push `v*` tag | `closetkeeper` (production) | `closetkeeper-admin` → production database |
+| local | `closetkeeper-local` on `spacetime start --in-memory` | `pnpm admin:dev` on port 7070 |
+
+- **Production never receives `--delete-data`.** The CLI refuses a
+  non-interactive publish that would require a migration or destroy rows
+  unless that flag is passed (verified), so an incompatible schema change
+  fails the job and leaves data alone. Handle it with an incremental
+  migration, never by adding the flag. Dev wipes itself on conflict instead.
+- **`init` runs once per database.** Anything it seeds is missing from a
+  database created before the seed existed; that database must be recreated.
+- **Every deployed admin origin** must be a registered redirect URI on the
+  SpacetimeAuth client, plus `/callback`, or login there fails. Previews use
+  one stable alias so that registration happens once.
+- **Secrets** live in GitHub (environments `dev` and `prod`, plus repository
+  level) and nowhere in the tree. The README lists them. A module cannot
+  read environment variables; nothing secret can ever be in module code.
+- The local database is in-memory and disappears with the process, so the
+  local publish and self-invite are repeated each session (see README).
 
 ## Dependency policy
 
@@ -219,7 +251,11 @@ Suppression logic belongs in the cron job or a reducer — never in the template
 - **Backups off the host, tested by actually restoring once.**
 - **Never expose the PGWire port beyond localhost on self-hosted deployments.**
   SSL is only supported on SpacetimeDB Cloud; Standalone has no TLS on that
-  port. Tunnel over SSH.
+  port. Tunnel over SSH. (Not currently applicable: production is Maincloud.
+  Kept in case that ever changes.)
+- **Maincloud Free pauses a database after a week idle.** What that looks
+  like to a volunteer opening the app after a holiday is untested and must
+  be, before launch, on `closetkeeper-dev`.
 - **Retention policy.** Purge or anonymize family records a fixed interval after
   their last appointment. Every field not retained is a field that can't leak.
 
@@ -243,6 +279,25 @@ Suppression logic belongs in the cron job or a reducer — never in the template
 ## Code conventions
 
 - All writes through reducers. No direct table mutation from clients.
+- **Every admin reducer starts with `requireStaff(ctx, capability)`** from
+  `spacetimedb/src/auth.ts`. No exceptions, no other authorization path.
+- **Tables are private unless allowlisted** in
+  `spacetimedb/test/schema-guardrail.test.ts` with a reason. The guardrail
+  fails CI otherwise. Clients see a private table's rows only through a
+  per-user view (see `my_staff`) that returns exactly the caller's own data.
+- **Schema changes are near-permanent once real data exists.** Only appending
+  a column with a default is an automatic migration. Get names and types
+  right the first time; every new column gets a default. See
+  `docs/decision-log.md`, "Production module publishes".
+- Table names are `snake_case`; generated client bindings expose them as
+  `camelCase` (`tables.myStaff`, `row.personId`). Reducer names are
+  `snake_case` in the database (`invite_staff` for `inviteStaff`).
+- **Regenerate bindings after any schema change** with `pnpm bindings` and
+  commit the result. CI fails if they are stale. A table appearing in the
+  bindings diff means it became public; that is what review is for.
+- Pure logic that needs no `ctx.db` lives in files that import nothing from
+  `spacetimedb/server` at runtime (type-only imports are fine), so Vitest can
+  test it without a host. See `spacetimedb/src/auth-rules.ts`.
 - Reducers give an audit trail nearly for free — preserve it; it becomes the
   impact reporting for grant applications.
 - Mobile-first intake UI. The primary use is standing in a garage holding a bag
