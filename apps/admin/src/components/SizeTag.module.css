@@ -64,16 +64,16 @@
 }
 
 .marquee[data-direction="left"] .track {
-	animation: slide-left 42s linear infinite;
+	animation: slide-left 70s linear infinite;
 }
 
 .marquee[data-direction="right"] .track {
-	animation: slide-right 42s linear infinite;
+	animation: slide-right 70s linear infinite;
 }
 
 .blink {
 	animation-name: blink;
-	animation-timing-function: ease-in-out;
+	animation-timing-function: steps(1, end);
 	animation-iteration-count: infinite;
 }
 
@@ -97,16 +97,19 @@
 
 @keyframes blink {
 	0%,
-	62% {
-		opacity: 1;
+	58% {
+		background: var(--mantine-color-tape-4);
+		color: var(--mantine-color-bark-9);
 	}
-	70%,
-	84% {
-		opacity: 0.12;
+	64%,
+	90% {
+		background: var(--mantine-color-pine-7);
+		color: var(--mantine-color-white);
 	}
-	92%,
+	96%,
 	100% {
-		opacity: 1;
+		background: var(--mantine-color-tape-4);
+		color: var(--mantine-color-bark-9);
 	}
 }
 

@@ -95,11 +95,11 @@ function MarqueeRow({
 				{doubled.map(({ s, copy }, i) => (
 					<SizeTag
 						key={`${copy}-${s}`}
-						tone={i % 5 === 3 ? "pine" : "tape"}
+						tone="tape"
 						className={classes.blink}
 						style={{
-							animationDuration: `${2.6 + jitter(i, seed) * 3.2}s`,
-							animationDelay: `-${(jitter(i, seed + 1) * 6).toFixed(2)}s`,
+							animationDuration: `${7 + jitter(i, seed) * 9}s`,
+							animationDelay: `-${(jitter(i, seed + 1) * 16).toFixed(2)}s`,
 						}}
 					>
 						{s}
@@ -111,8 +111,8 @@ function MarqueeRow({
 }
 
 /**
- * Two rows of kids' sizes sliding in opposite directions, each tag fading
- * out and back on its own cycle. The closet's own alphabet, as the sign-in
+ * Two rows of kids' sizes sliding in opposite directions, each tag flipping
+ * between tape and pine on its own slow cycle. The closet's own alphabet, as the sign-in
  * page's only image. Decorative and hidden from readers; still under
  * prefers-reduced-motion.
  */
