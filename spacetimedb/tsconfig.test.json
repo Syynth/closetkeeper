@@ -1,0 +1,12 @@
+{
+	// The module's own tsconfig.json carries options SpacetimeDB requires for
+	// bundling the module and asks not to change. Tests run under Node with
+	// Vitest, not inside the module runtime, so they get their own config.
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ES2022"],
+		"types": ["node"],
+		"jsx": "preserve"
+	},
+	"include": ["./test/**/*"]
+}

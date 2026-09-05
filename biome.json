@@ -12,7 +12,8 @@
 			"!docs/spacetimedb-guide.md",
 			"!docs/spacetimedb-rules",
 			"!**/pnpm-lock.yaml",
-			"!**/routeTree.gen.ts"
+			"!**/routeTree.gen.ts",
+			"!packages/bindings/src"
 		]
 	},
 	"formatter": {
