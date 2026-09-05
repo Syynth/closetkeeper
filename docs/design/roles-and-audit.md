@@ -60,10 +60,16 @@ for bootstrap and recovery, not an org title.
 |---|---|---|
 | `super_admin` | all | publisher and bootstrap email; technical |
 | `president` | all | the org's top officer |
-| `director` | inventory.*, donation.*, family.*, staff.manage | general staff |
+| `director` | inventory.*, donation.*, family.*, staff.manage | board director; same bundle as staff |
+| `staff` | inventory.*, donation.*, family.*, staff.manage | employees; same bundle as director |
 | `secretary` | inventory.*, donation.*, family.*, staff.manage | records and appointments |
-| `treasurer` | inventory.read, donation.read, financial.read | never family data |
-| `volunteer` | inventory.*, donation.* | never family data |
+| `treasurer` | inventory.*, donation.*, family.*, financial.read | the only role with financials |
+| `volunteer` | inventory.*, donation.* | **never family data** (constraint 2) |
+
+Confirmed by the maintainer 2026-09-05: every officer and staff role sees
+family data; volunteer is the only role that does not. `staff` and
+`director` are two names for one bundle because that is how people
+describe themselves.
 
 Seeded bundles are starting points; a super-admin can adjust any role's
 capabilities later (subject to the protected-capability rule). System
@@ -181,6 +187,50 @@ Q3" is a count over `audit_event` by action and time. That is the
 grant-reporting story, and it is why actions are a closed vocabulary rather
 than free text.
 
+## The access log (separate from the audit log)
+
+The audit log answers "who did what". A separate **access log** answers
+"who is trying to get in", which the maintainer asked for explicitly.
+
+```
+access_event
+  id            u64 pk autoinc
+  at            timestamp index
+  identity      identity index       the caller's SpacetimeDB identity
+  connection_id string               "" when absent
+  issuer        string               "" for anonymous callers
+  subject       string               "" for anonymous callers
+  email         string               only when the token was trusted; see below
+  outcome       string               "staff" | "linked" | "invited_no_match" | "untrusted_token" | "anonymous"
+```
+
+Written by `clientConnected` on every connection, whatever the outcome, so
+it also serves as the login history for real staff. Anonymous connections
+are logged here (identity only), which is cheap and bounded per connection,
+unlike logging every denied reducer call from them.
+
+**What the module cannot see: IP addresses.** The reducer context exposes
+`sender`, `timestamp`, `connectionId`, and the JWT claims; the host
+terminates the WebSocket and does not pass transport details through. This
+was checked against the 2.10 SDK, not assumed. Options if network-level
+data is ever needed:
+
+- Cloudflare's own request analytics and WAF logs in front of the admin
+  URLs record IPs hitting the *login page*, without adding any server code.
+- Proxying the SpacetimeDB WebSocket through a Worker would not help: the
+  module still could not read headers.
+- Maincloud's host logs may retain connection metadata on the provider's
+  side; that is theirs, not ours.
+
+Retention: access events are purged after a fixed interval (proposal: 90
+days), unlike audit events, which are kept.
+
+**Open:** whether to store the email for trusted-but-uninvited logins. It is
+the one field that makes "someone tried to get in" actionable (invite them,
+or don't), but it is PII from a person who is not staff. Proposal: store it,
+purge with the 90-day rule, and never surface it outside the super-admin
+screen.
+
 ## Provenance (for later, but shaped now)
 
 Inventory will be a **ledger**, not a count: an `inventory_movement` row
@@ -205,14 +255,16 @@ in that every movement is created through an audited reducer.
    There is no reducer that deletes or edits `audit_event` rows, and none
    may be added. Retention purges detach references; they never delete
    events.
-2. **Anonymous denials are not logged.** Denials are logged only for
-   callers who resolved to a staff member but lacked the capability. An
-   anonymous caller carries no staff id and could spam the log.
-3. **Roles:** president, secretary, treasurer, director, volunteer, plus the
-   technical super_admin. See the seed table above.
+2. **Denied reducer calls are audited only for resolved staff.** Anonymous
+   and unknown callers are recorded once per connection in the separate
+   access log instead, so the audit log cannot be spammed.
+3. **Roles:** president, secretary, treasurer, director, staff, volunteer,
+   plus the technical super_admin. Every role but volunteer sees family
+   data. See the seed table above.
+4. **An access log exists, separate from the audit log**, recording every
+   connection at the identity level. IPs are not available to the module.
 
 ## Still open
 
-- The exact seeded capabilities per role above are my best guess and need
-  the maintainer's confirmation; they are cheap to change until launch and
-  editable by a super-admin after.
+- Whether the access log stores the email of trusted-but-uninvited logins
+  (see the access log section).

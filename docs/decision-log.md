@@ -272,3 +272,50 @@ Entries are appended at the bottom, newest last.
   matters for screens built at 10pm. One library to keep current under the
   latest-everything policy. Its peer range pins React minor versions, so
   React and Mantine upgrades move together.
+
+## Audit log is append-only for everyone, including super-admins
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** architectural
+- **WHAT:** No reducer deletes or edits `audit_event` rows, and none may be
+  added, regardless of role. Retention purges detach what events point at;
+  they never remove events.
+- **WHY:** The maintainer's explicit call: a log that the most powerful
+  account can tamper with is not an audit log. The impact numbers for grant
+  reporting also come from this table, so it must survive both purges and
+  people.
+
+## Roles: president, secretary, treasurer, director, staff, volunteer
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** moderate
+- **WHAT:** These are seeded as system roles alongside the technical
+  `super_admin`. Every role except volunteer sees family data; treasurer is
+  the only role with `financial.read`. `staff` and `director` are two names
+  for the same capability bundle.
+- **WHY:** These are the org's real roles as the maintainer knows them
+  today; director is equivalent to general staff, and keeping both names
+  matches how people describe themselves. System roles cannot be deleted
+  later, so the commitment is to the names; a super-admin can adjust any
+  bundle afterwards. Volunteers being the only role without family data is
+  CLAUDE.md constraint 2 expressed as a seed.
+
+## A separate access log records every connection; IPs are not available
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** moderate
+- **WHAT:** `clientConnected` writes an `access_event` row for every
+  connection (identity, connection id, token issuer/subject, outcome),
+  separate from the audit log. Denied reducer calls are audited only when
+  the caller resolved to staff; unknown callers appear in the access log
+  instead. Access events are purged on a fixed interval; audit events are
+  not.
+- **WHY:** The maintainer wants to know who is trying to get in. The
+  maintainer asked for IP addresses too; the 2.10 reducer context exposes
+  only sender, timestamp, connection id, and JWT claims, so IPs cannot be
+  recorded by the module. Cloudflare's request analytics in front of the
+  admin URLs are the network-level substitute if ever needed. Per-connection
+  logging is bounded; per-denied-call logging of anonymous callers is not.
