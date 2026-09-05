@@ -320,3 +320,19 @@ Entries are appended at the bottom, newest last.
   recorded by the module. Cloudflare's request analytics in front of the
   admin URLs are the network-level substitute if ever needed. Per-connection
   logging is bounded; per-denied-call logging of anonymous callers is not.
+
+## Denied reducer calls are not recorded in the audit table
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** minor/local
+- **WHAT:** The proposal's `outcome: "denied"` audit events are dropped.
+  Denied and failed admin calls are written to the host log with
+  `console.warn` (reducer name and staff id only) and are visible with
+  `spacetime logs`; unknown callers appear in the access log per
+  connection. `audit_event` records successful calls only.
+- **WHY:** Verified on a local instance while building: a reducer that
+  throws rolls back everything it did, including an audit row inserted
+  before the throw. The only way to persist a denial would be to not
+  throw, which would report success to the client. Host logs are the
+  honest fallback; they are retained by the provider and carry no PII.
