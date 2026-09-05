@@ -27,6 +27,25 @@ decision from the maintainer.
    of 3, and never broken down by school or neighborhood. In a county this size
    a specific count can identify a specific child.
 
+## What in this document is actually settled
+
+This file began as notes from a brainstorming session. Not everything in it
+was decided, and several specifics were wrong on first contact — it called for
+a Rust module, and named a React Router version two majors behind. Treat it
+accordingly.
+
+**Settled.** SpacetimeDB as the backend. Cloudflare as the hosting platform.
+TypeScript as the language. React as the UI library. The non-negotiable
+constraints above, the roles table, and the data model principles.
+
+**Not settled.** The framework and router around React — React Router,
+TanStack Router, or a plain Vite SPA are all still open. UI and component
+libraries. Testing tools. Branching and deployment process. Any specific
+version number appearing anywhere in this document.
+
+A choice appearing in this file is not evidence it was decided. If it is in
+the "not settled" list, ask rather than assume.
+
 ## Stack
 
 - **Backend:** SpacetimeDB module written in **TypeScript**, deployed to
