@@ -81,6 +81,36 @@ export function sql<Row = Record<string, unknown>>(
 	return first?.rows ?? [];
 }
 
+/**
+ * Call a reducer through the CLI. Arguments are JSON values, one per reducer
+ * parameter. By default the call is made as the CLI's logged-in identity,
+ * which is also the identity that published the module, i.e. the seeded first
+ * staff member. `anonymous: true` uses a fresh identity that owns nothing.
+ * Returns the error text on failure, or null on success.
+ */
+export function call(
+	database: string,
+	reducer: string,
+	args: unknown[],
+	opts: { anonymous?: boolean } = {},
+): string | null {
+	try {
+		spacetime([
+			"call",
+			database,
+			"--server",
+			LOCAL_SERVER,
+			...(opts.anonymous ? ["--anonymous"] : []),
+			reducer,
+			...args.map((a) => JSON.stringify(a)),
+		]);
+		return null;
+	} catch (err) {
+		const e = err as { stderr?: string; stdout?: string; message: string };
+		return e.stderr || e.stdout || e.message;
+	}
+}
+
 /** Ping the local instance; throws with a readable message if it is not up. */
 export async function assertLocalInstance(): Promise<void> {
 	try {

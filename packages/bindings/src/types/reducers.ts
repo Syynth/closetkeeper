@@ -6,5 +6,11 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import InviteStaffReducer from "../invite_staff_reducer";
+import SetStaffActiveReducer from "../set_staff_active_reducer";
+import SetStaffRoleReducer from "../set_staff_role_reducer";
 
+export type InviteStaffParams = __Infer<typeof InviteStaffReducer>;
+export type SetStaffActiveParams = __Infer<typeof SetStaffActiveReducer>;
+export type SetStaffRoleParams = __Infer<typeof SetStaffRoleReducer>;
 

@@ -26,7 +26,7 @@ const PUBLIC_TABLES: ReadonlyMap<string, string> = new Map([
 /** Table names that must never be public regardless of what the allowlist says. */
 const NEVER_PUBLIC = [
 	"person",
-	"account",
+	"auth_provider_link",
 	"staff_member",
 	"request",
 	"appointment",

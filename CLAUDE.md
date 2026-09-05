@@ -156,21 +156,33 @@ SpacetimeDB modules are exposed to the open internet and anyone can connect. A
 client with no token gets a fresh anonymous identity. Authentication gives you a
 stable identity and **no authorization whatsoever**.
 
-- **Provider: SpacetimeDB's built-in identity, to start.** A third-party OIDC
-  provider may replace it later; everything below is written to survive that
-  swap. Details of the validation below are still under design — do not treat
-  the specifics as settled.
-- **Anyone can obtain a valid SpacetimeDB identity.** With the built-in
-  provider there is no signup gate we control, so authentication proves only
-  that a caller is *someone*, not that they are *ours*. The `staff_member`
-  allowlist therefore carries the entire authorization burden. Treat a missing
-  allowlist check as a data breach, not a bug.
-- In `client_connected`, validate the JWT `iss` matches our issuer and the `aud`
-  claim matches our client ID. Without this, a token from any unrelated OIDC
-  provider authenticates fine.
-- Every admin reducer returns `Err` unless the caller resolves to a
-  `staff_member` row. Allowlist, never blocklist.
-- The first staff identity is bootstrapped manually.
+- **Provider: SpacetimeAuth (`https://auth.spacetimedb.com/oidc`), magic
+  link only to start.** More providers (Google, etc.) can be enabled in the
+  SpacetimeAuth project later without a schema change: each provider login
+  is one more `auth_provider_link` row for the same person.
+- **Anyone can obtain a valid SpacetimeDB identity.** Authentication proves
+  only that a caller is *someone*, not that they are *ours*. The
+  `staff_member` allowlist carries the entire authorization burden. Treat a
+  missing allowlist check as a data breach, not a bug.
+- **Connecting grants nothing.** `clientConnected` records the visit and, if
+  the token is trusted and its verified email matches a person with an
+  active staff row, links the identity to that person. It never rejects,
+  because the CLI and the test harness connect with non-SpacetimeAuth
+  identities. See `spacetimedb/src/auth.ts`.
+- **Every admin reducer starts with `requireStaff(ctx, capability)`** from
+  `src/auth.ts`, which resolves `ctx.sender` → `auth_provider_link` →
+  `staff_member` and checks the role's capabilities (`src/auth-rules.ts`).
+  Allowlist, never blocklist. A trusted token must carry our issuer and one
+  of our client IDs in `aud` (`src/config.ts`), so a token minted for some
+  other application can never resolve to staff.
+- **Bootstrap:** `init` seeds the publisher's identity as the first staff
+  member (in `init`, `ctx.sender` is whoever published). No email or name is
+  in the module. CI then invites the address in the `BOOTSTRAP_STAFF_EMAIL`
+  repository secret, so another deployer seeds their own person without
+  touching code. `init` runs once per database; a database created before
+  the seed existed must be recreated.
+- **Roles are code, not rows.** Their meaning is enforced by code paths, so
+  a table would only add a place for the two to drift.
 
 ### Roles
 

@@ -190,3 +190,45 @@ Entries are appended at the bottom, newest last.
   every other confirmation skipped, so the production job can never destroy
   data by itself. An incompatible schema change fails the job and is handled
   deliberately; production never receives `--delete-data`.
+
+## Auth model: SpacetimeAuth magic link, per-reducer allowlist, publisher bootstrap
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** architectural
+- **WHAT:** Staff log in through SpacetimeAuth (SpacetimeDB's managed OIDC
+  provider, currently beta) using magic link; other providers may be enabled
+  later. A `person` is the account; each provider login is an
+  `auth_provider_link` row (identity, issuer, subject → person), so one
+  person can have several logins and revoking one is deleting one row.
+  Authorization is a per-reducer `requireStaff(ctx, capability)` helper that
+  resolves `ctx.sender` through `auth_provider_link` to an active
+  `staff_member`; `clientConnected` never rejects a connection. Roles are a
+  closed set in code with a capability table, not a vocabulary table.
+- **WHY:** SpacetimeAuth avoids paying for and operating a third-party IdP
+  before there is a single user, and its tokens carry `email_verified`,
+  which the invitation model needs. Rejecting at `clientConnected` would
+  break the CLI and the test harness, whose identities come from
+  spacetimedb.com rather than SpacetimeAuth; a per-reducer gate is also the
+  single mechanism CLAUDE.md asks for. Roles gate code paths, so encoding
+  them as rows would create two sources of truth. The table is named
+  `auth_provider_link` rather than `connection` to avoid confusion with
+  SpacetimeDB's WebSocket `connectionId`, which is never stored.
+
+## First staff member is the publisher; invitations come from a repo secret
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** moderate
+- **WHAT:** `init` seeds whoever published the module as the first active
+  staff member (during `init`, `ctx.sender` is the publisher). CI then calls
+  the idempotent `invite_staff` reducer with the `BOOTSTRAP_STAFF_EMAIL`
+  repository secret. No email, name, or identity constant lives in the code.
+- **WHY:** The maintainer wants another organization to be able to deploy
+  this without their email in the source, and modules cannot read
+  environment variables, so a "secret" could only be baked into the bundle.
+  Seeding the publisher needs no secret at all and has no "first user wins"
+  race; the invite step makes the first real address configurable per
+  deployment. Cost: `init` runs once per database, so a database created
+  before this seed existed must be recreated (done for `closetkeeper-dev`
+  on 2026-09-05; production did not yet exist).

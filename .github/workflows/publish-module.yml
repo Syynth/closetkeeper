@@ -63,6 +63,18 @@ jobs:
           --delete-data=on-conflict
           --yes=remote,skip-login,break-clients,delete-data
 
+      - name: Invite the first staff member
+        # Optional. BOOTSTRAP_STAFF_EMAIL is a repository secret so a different
+        # deployer seeds their own address without it ever appearing in code.
+        # The publisher identity (this token) is seeded as staff by init, so it
+        # is authorized to invite. The reducer is idempotent.
+        if: env.EMAIL != ''
+        env:
+          EMAIL: ${{ secrets.BOOTSTRAP_STAFF_EMAIL }}
+        run: >
+          spacetime call closetkeeper-dev --server maincloud
+          invite_staff "\"$EMAIL\"" '"Maintainer"' '"staff"'
+
   prod:
     name: Publish to closetkeeper (production)
     if: github.ref_type == 'tag'
@@ -95,3 +107,11 @@ jobs:
           --server maincloud
           --module-path spacetimedb
           --yes=remote,skip-login,break-clients
+
+      - name: Invite the first staff member
+        if: env.EMAIL != ''
+        env:
+          EMAIL: ${{ secrets.BOOTSTRAP_STAFF_EMAIL }}
+        run: >
+          spacetime call closetkeeper --server maincloud
+          invite_staff "\"$EMAIL\"" '"Maintainer"' '"staff"'

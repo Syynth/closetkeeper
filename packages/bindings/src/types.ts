@@ -10,3 +10,33 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AuthProviderLink = __t.object("AuthProviderLink", {
+  id: __t.u64(),
+  identity: __t.identity(),
+  issuer: __t.string(),
+  subject: __t.string(),
+  personId: __t.u64(),
+  createdAt: __t.timestamp(),
+  lastSeenAt: __t.timestamp(),
+});
+export type AuthProviderLink = __Infer<typeof AuthProviderLink>;
+
+export const Person = __t.object("Person", {
+  id: __t.u64(),
+  displayName: __t.string(),
+  email: __t.string(),
+  notes: __t.string(),
+  createdAt: __t.timestamp(),
+});
+export type Person = __Infer<typeof Person>;
+
+export const StaffMember = __t.object("StaffMember", {
+  id: __t.u64(),
+  personId: __t.u64(),
+  role: __t.string(),
+  active: __t.bool(),
+  invitedAt: __t.timestamp(),
+  invitedBy: __t.u64(),
+});
+export type StaffMember = __Infer<typeof StaffMember>;
+
