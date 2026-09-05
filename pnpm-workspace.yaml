@@ -1,0 +1,5 @@
+packages:
+  - spacetimedb
+  # - web        # added when the React Router app is scaffolded
+minimumReleaseAgeExclude:
+  - spacetimedb@2.10.0

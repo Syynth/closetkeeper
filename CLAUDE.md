@@ -42,6 +42,11 @@ decision from the maintainer.
 - **Public pages:** SSR, rendered from a KV snapshot. Never query SpacetimeDB
   per visitor request.
 
+General SpacetimeDB reference material — reducer semantics, determinism rules,
+client subscription patterns — lives in [`docs/spacetimedb-guide.md`](docs/spacetimedb-guide.md),
+copied from the CLI template. It is upstream documentation, not project policy.
+Where the two disagree, this file wins.
+
 ## Phasing
 
 Phase 1 (current): internal admin only — inventory, donation intake, requests,
