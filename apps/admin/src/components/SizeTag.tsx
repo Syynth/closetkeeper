@@ -74,6 +74,9 @@ function jitter(i: number, seed: number) {
 	return x - Math.floor(x);
 }
 
+/** The shared cycle every tag follows; each tag takes its green turn at a different offset. */
+const CYCLE_SECONDS = 36;
+
 function MarqueeRow({
 	sizes,
 	direction,
@@ -89,6 +92,15 @@ function MarqueeRow({
 		...sizes.map((s) => ({ s, copy: "a" })),
 		...sizes.map((s) => ({ s, copy: "b" })),
 	];
+	// Turns are spread evenly across the cycle but handed out in a scrambled
+	// order, so about three tags are green at once and neighbours rarely are.
+	const turns = doubled
+		.map((_, i) => ({ i, r: jitter(i, seed) }))
+		.sort((a, b) => a.r - b.r)
+		.map((x) => x.i);
+	const offsetOf = new Map(
+		turns.map((i, rank) => [i, (rank / doubled.length) * CYCLE_SECONDS]),
+	);
 	return (
 		<div className={classes.marquee} data-direction={direction}>
 			<div className={classes.track}>
@@ -98,8 +110,8 @@ function MarqueeRow({
 						tone="tape"
 						className={classes.blink}
 						style={{
-							animationDuration: `${7 + jitter(i, seed) * 9}s`,
-							animationDelay: `-${(jitter(i, seed + 1) * 16).toFixed(2)}s`,
+							animationDuration: `${CYCLE_SECONDS}s`,
+							animationDelay: `-${(offsetOf.get(i) ?? 0).toFixed(2)}s`,
 						}}
 					>
 						{s}
@@ -111,8 +123,8 @@ function MarqueeRow({
 }
 
 /**
- * Two rows of kids' sizes sliding in opposite directions, each tag flipping
- * between tape and pine on its own slow cycle. The closet's own alphabet, as the sign-in
+ * Two rows of kids' sizes sliding in opposite directions. Tags take turns
+ * being pine, about three at a time, on one shared slow cycle. The closet's own alphabet, as the sign-in
  * page's only image. Decorative and hidden from readers; still under
  * prefers-reduced-motion.
  */

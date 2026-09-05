@@ -95,18 +95,19 @@
 	}
 }
 
+/* One tag's turn: green for ~11% of the shared cycle, with a crossfade each way. */
 @keyframes blink {
 	0%,
-	54% {
+	2% {
 		background: var(--mantine-color-tape-4);
 		color: var(--mantine-color-bark-9);
 	}
-	62%,
-	88% {
+	5%,
+	12% {
 		background: var(--mantine-color-pine-7);
 		color: var(--mantine-color-white);
 	}
-	96%,
+	15%,
 	100% {
 		background: var(--mantine-color-tape-4);
 		color: var(--mantine-color-bark-9);
