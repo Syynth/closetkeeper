@@ -254,3 +254,69 @@ Entries are appended at the bottom, newest last.
   secret. Two Workers mirror the two databases exactly. A single preview
   alias is used because SpacetimeAuth redirect URIs must match exactly, so
   one registration covers every preview.
+
+## Mantine for the admin app
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** admin
+- **SCOPE:** moderate
+- **WHAT:** The admin SPA uses Mantine (`@mantine/core`, `@mantine/hooks`,
+  `@mantine/form`) with `postcss-preset-mantine`. Considered and set aside:
+  Chakra UI v3, shadcn/ui + Tailwind, Park UI (Ark + Panda), plain CSS.
+- **WHY:** The maintainer's condition was that pages stay reasonably fast
+  and SSR stays possible. Mantine 7+ styles with CSS modules and a PostCSS
+  preset, so there is no runtime CSS-in-JS and nothing SSR-specific to
+  manage; that ruled out Chakra's Emotion styling. Against shadcn +
+  Tailwind, Mantine is batteries-included: forms, mobile-friendly inputs,
+  and layout come from one dependency rather than being assembled, which
+  matters for screens built at 10pm. One library to keep current under the
+  latest-everything policy. Its peer range pins React minor versions, so
+  React and Mantine upgrades move together.
+
+## Audit log is append-only for everyone, including super-admins
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** architectural
+- **WHAT:** No reducer deletes or edits `audit_event` rows, and none may be
+  added, regardless of role. Retention purges detach what events point at;
+  they never remove events.
+- **WHY:** The maintainer's explicit call: a log that the most powerful
+  account can tamper with is not an audit log. The impact numbers for grant
+  reporting also come from this table, so it must survive both purges and
+  people.
+
+## Roles: president, secretary, treasurer, staff, volunteer
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** moderate
+- **WHAT:** These are seeded as system roles alongside the technical
+  `super_admin`. Every role except volunteer sees family data; treasurer is
+  the only role with `financial.read`. A `director` role, equivalent to
+  staff, was considered and deferred until it is needed.
+- **WHY:** These are the org's real roles as the maintainer knows them
+  today. Director is not doing anything yet, and because roles are rows it
+  can be added later with a reducer call rather than a republish. System
+  roles cannot be deleted later, so the commitment is to the names; a
+  super-admin can adjust any bundle afterwards. Volunteers being the only role without family data is
+  CLAUDE.md constraint 2 expressed as a seed.
+
+## A separate access log records every connection; IPs are not available
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** moderate
+- **WHAT:** `clientConnected` writes an `access_event` row for every
+  connection (identity, connection id, token issuer/subject, outcome),
+  separate from the audit log. Denied reducer calls are audited only when
+  the caller resolved to staff; unknown callers appear in the access log
+  instead. Access events are purged on a fixed interval; audit events are
+  not. The email of a trusted-but-uninvited login is stored, purged on the
+  same interval, and shown only to super-admins.
+- **WHY:** The maintainer wants to know who is trying to get in. The
+  maintainer asked for IP addresses too; the 2.10 reducer context exposes
+  only sender, timestamp, connection id, and JWT claims, so IPs cannot be
+  recorded by the module. Cloudflare's request analytics in front of the
+  admin URLs are the network-level substitute if ever needed. Per-connection
+  logging is bounded; per-denied-call logging of anonymous callers is not.
