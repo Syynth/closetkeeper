@@ -46,9 +46,14 @@ Workers (static-asset admin SPA + a separate SSR/cron Worker). The admin app
 is built standalone under `apps/admin` so either shape remains possible.
 Decide when phase 2 begins, not before.
 
-**Not settled.** UI and component libraries. Testing tools. Branching and
-deployment process. Any specific version number appearing anywhere in this
-document.
+**Also settled.** Testing: Vitest, with module tests run as integration tests
+against a local `spacetime start --in-memory` instance rather than a mock, and
+a schema guardrail test that fails if any table is public without being
+allowlisted. Repository: public, Apache-2.0. See `docs/decision-log.md` for
+the reasoning behind each of these.
+
+**Not settled.** UI and component libraries. Branching rules. Any specific
+version number appearing anywhere in this document.
 
 A choice appearing in this file is not evidence it was decided. If it is in
 the "not settled" list, ask rather than assume.

@@ -1,0 +1,80 @@
+# Checks only. Nothing in this workflow deploys anything.
+#
+# Admin deploys go through Cloudflare Workers Builds (git-connected, with
+# per-PR previews). Module publishes to the dev database are a separate
+# workflow; production publishes are done by a human from a terminal, never
+# from CI, because a conflicting schema change can destroy data.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, typecheck, build, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        # Version comes from the packageManager field in package.json.
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install SpacetimeDB CLI
+        run: |
+          curl -sSf https://install.spacetimedb.com | sh -s -- --yes
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: SpacetimeDB CLI version
+        run: spacetime --version
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      - name: Build module
+        run: pnpm module:build
+
+      - name: Build admin
+        run: pnpm admin:build
+
+      - name: Generated bindings are up to date
+        # Regenerates packages/bindings from the module and fails if the result
+        # differs from what is committed. Every schema change must land as a
+        # reviewable diff to the bindings, including a table becoming public.
+        run: |
+          pnpm bindings
+          git diff --exit-code -- packages/bindings || {
+            echo "::error::packages/bindings is stale. Run 'pnpm bindings' and commit the result." >&2
+            exit 1
+          }
+
+      - name: Start local SpacetimeDB
+        run: |
+          spacetime start --in-memory --listen-addr 127.0.0.1:3000 --non-interactive &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:3000/v1/ping >/dev/null && exit 0
+            sleep 1
+          done
+          echo "SpacetimeDB did not become ready" >&2
+          exit 1
+
+      - name: Test
+        run: pnpm test

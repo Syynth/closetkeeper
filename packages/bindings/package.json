@@ -1,0 +1,14 @@
+{
+	"name": "@closetkeeper/bindings",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Client bindings generated from the SpacetimeDB module. Do not edit; run `pnpm bindings` from the repo root.",
+	"type": "module",
+	"license": "Apache-2.0",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"peerDependencies": {
+		"spacetimedb": "2.10.*"
+	}
+}

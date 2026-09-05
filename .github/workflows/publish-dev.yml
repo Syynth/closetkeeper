@@ -1,0 +1,64 @@
+# Publishes the module to the `closetkeeper-dev` database on Maincloud after
+# every push to main that touches it.
+#
+# This workflow must never be pointed at the production database. The dev
+# database holds no real data, so `--delete-data=on-conflict` is acceptable
+# here: a conflicting schema change wipes dev rather than blocking the
+# pipeline. Production publishes are done by a person from a terminal, with
+# the CLI's confirmation prompts intact. See README, "Deploying".
+#
+# Requires the repository secret SPACETIMEDB_TOKEN: the token from
+# `spacetime login show --include-token` for an identity that owns the dev
+# database. Never commit it.
+
+name: Publish module to dev
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - spacetimedb/**
+      - .github/workflows/publish-dev.yml
+
+concurrency:
+  group: publish-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to closetkeeper-dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: dev
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install SpacetimeDB CLI
+        run: |
+          curl -sSf https://install.spacetimedb.com | sh -s -- --yes
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Log in
+        run: spacetime login --token "$SPACETIMEDB_TOKEN"
+        env:
+          SPACETIMEDB_TOKEN: ${{ secrets.SPACETIMEDB_TOKEN }}
+
+      - name: Publish
+        run: >
+          spacetime publish closetkeeper-dev
+          --server maincloud
+          --module-path spacetimedb
+          --delete-data=on-conflict
+          --yes=remote,skip-login,break-clients,delete-data
