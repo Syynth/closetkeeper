@@ -1,0 +1,162 @@
+# Deploys the admin SPA to Cloudflare Workers (static assets only).
+#
+#   pull request              ->  preview version on closetkeeper-admin-dev,
+#                                 alias "preview", URL posted on the PR
+#   push to main              ->  closetkeeper-admin-dev   (dev database)
+#   push of a v* tag          ->  closetkeeper-admin       (production database)
+#
+# Same triggers as the module's workflow, so the admin and the module reach
+# production together. The database each build talks to is baked in at build
+# time through VITE_* variables; nothing here is secret (any browser client
+# learns these values), but the Cloudflare token is.
+#
+# Preview URLs are public. A preview only lets someone log in if its origin
+# is registered as a redirect URI on the SpacetimeAuth client, and a login
+# grants nothing unless the person is invited staff, so a public preview
+# exposes the same thing the production URL does: a login screen.
+#
+# Secrets: CLOUDFLARE_API_TOKEN (Edit Cloudflare Workers template) and
+# CLOUDFLARE_ACCOUNT_ID, both repository-level. Wrangler reads them from the
+# environment.
+
+name: Deploy admin
+
+on:
+  pull_request:
+    paths:
+      - apps/admin/**
+      - packages/bindings/**
+      - .github/workflows/deploy-admin.yml
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - apps/admin/**
+      - packages/bindings/**
+      - .github/workflows/deploy-admin.yml
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  VITE_SPACETIMEAUTH_AUTHORITY: https://auth.spacetimedb.com/oidc
+  VITE_SPACETIMEAUTH_CLIENT_ID: client_034JkHw9y08pQVcNeFcW3u
+  VITE_SPACETIMEDB_HOST: wss://maincloud.spacetimedb.com
+
+jobs:
+  preview:
+    name: Preview on closetkeeper-admin-dev
+    # Forks do not receive secrets, so a fork PR cannot produce a preview.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: admin-preview-${{ github.event.number }}
+      cancel-in-progress: true
+    env:
+      VITE_SPACETIMEDB_DB_NAME: closetkeeper-dev
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm admin:build
+      - name: Upload preview version
+        id: upload
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          upload() {
+            pnpm --filter @closetkeeper/admin exec wrangler versions upload \
+              --name closetkeeper-admin-dev \
+              --preview-alias preview \
+              --tag "pr-${{ github.event.number }}" \
+              --message "PR #${{ github.event.number }} ${{ github.event.pull_request.head.sha }}" \
+              2>&1 | tee upload.log
+          }
+          # A version can only be uploaded to a Worker that exists, and the
+          # dev Worker is created by the first merge to main. Until then, the
+          # first preview creates it with a plain deploy (same build, same dev
+          # database) and then uploads the version.
+          if ! upload; then
+            if grep -q "does not yet exist" upload.log; then
+              pnpm --filter @closetkeeper/admin exec wrangler deploy --name closetkeeper-admin-dev
+              upload
+            else
+              exit 1
+            fi
+          fi
+          url=$(grep -oE 'https://preview-[a-z0-9.-]+\.workers\.dev' upload.log | head -1 || true)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Comment the preview URL on the PR
+        if: steps.upload.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.upload.outputs.url }}
+        run: |
+          gh pr comment "${{ github.event.number }}" --repo "${{ github.repository }}" \
+            --body "Admin preview (dev database): ${URL}"
+
+  dev:
+    name: Deploy closetkeeper-admin-dev
+    if: github.event_name == 'push' && github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: dev
+    concurrency:
+      group: admin-dev
+      cancel-in-progress: false
+    env:
+      VITE_SPACETIMEDB_DB_NAME: closetkeeper-dev
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm admin:build
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          pnpm --filter @closetkeeper/admin exec wrangler deploy --name closetkeeper-admin-dev | tee deploy.log
+          grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1 | sed 's/^/Deployed: /' >> "$GITHUB_STEP_SUMMARY"
+
+  prod:
+    name: Deploy closetkeeper-admin (production)
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: prod
+    concurrency:
+      group: admin-prod
+      cancel-in-progress: false
+    env:
+      VITE_SPACETIMEDB_DB_NAME: closetkeeper
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm admin:build
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          pnpm --filter @closetkeeper/admin exec wrangler deploy --name closetkeeper-admin | tee deploy.log
+          grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1 | sed 's/^/Deployed: /' >> "$GITHUB_STEP_SUMMARY"
