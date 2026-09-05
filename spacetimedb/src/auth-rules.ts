@@ -8,21 +8,10 @@
 import type { JwtClaims } from "spacetimedb/server";
 
 /**
- * Roles are a closed set defined in code, not a vocabulary table, because
- * each role's meaning is enforced by code paths. Adding a role is a code
- * change regardless, so a table would only add a place for the two to drift.
- * See CLAUDE.md, "Roles".
- */
-export const ROLES = ["volunteer", "staff", "treasurer"] as const;
-export type Role = (typeof ROLES)[number];
-
-export function isRole(value: string): value is Role {
-	return (ROLES as readonly string[]).includes(value);
-}
-
-/**
- * What each role may do. Keep this table the single source of truth; reducers
- * ask `can(role, capability)` rather than comparing role names.
+ * Capabilities are the things reducers check. They are a closed set in code
+ * because a capability nobody's code checks is meaningless. Roles, which
+ * bundle capabilities, are rows (see schema.ts) so the org can shape them
+ * without a republish.
  */
 export const CAPABILITIES = [
 	"inventory.read",
@@ -33,30 +22,99 @@ export const CAPABILITIES = [
 	"family.write",
 	"financial.read",
 	"staff.manage",
+	"staff.manage_sensitive",
+	"role.manage",
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
 
-const GRANTS: Record<Role, readonly Capability[]> = {
-	volunteer: [
-		"inventory.read",
-		"inventory.write",
-		"donation.read",
-		"donation.write",
-	],
-	staff: [
-		"inventory.read",
-		"inventory.write",
-		"donation.read",
-		"donation.write",
-		"family.read",
-		"family.write",
-		"staff.manage",
-	],
-	treasurer: ["inventory.read", "donation.read", "financial.read"],
-};
+export function isCapability(value: string): value is Capability {
+	return (CAPABILITIES as readonly string[]).includes(value);
+}
 
-export function can(role: Role, capability: Capability): boolean {
-	return GRANTS[role].includes(capability);
+/**
+ * Capabilities that encode CLAUDE.md's non-negotiable constraints. Granting
+ * one to a role, or putting someone in a role that holds one, requires the
+ * caller to hold `staff.manage_sensitive`, which only super-admins have by
+ * default. Configurable, but never casually.
+ */
+export const PROTECTED_CAPABILITIES: readonly Capability[] = [
+	"family.read",
+	"family.write",
+	"role.manage",
+	"staff.manage_sensitive",
+];
+
+export function isProtected(capability: Capability): boolean {
+	return PROTECTED_CAPABILITIES.includes(capability);
+}
+
+/** Roles seeded by init. System roles cannot be deleted. */
+export interface SystemRole {
+	key: string;
+	label: string;
+	description: string;
+	capabilities: readonly Capability[];
+}
+
+const ALL: readonly Capability[] = CAPABILITIES;
+const OPERATIONS: readonly Capability[] = [
+	"inventory.read",
+	"inventory.write",
+	"donation.read",
+	"donation.write",
+];
+const FAMILY: readonly Capability[] = ["family.read", "family.write"];
+
+export const SYSTEM_ROLES: readonly SystemRole[] = [
+	{
+		key: "super_admin",
+		label: "Super-admin",
+		description:
+			"Technical role for bootstrap and recovery. Holds every capability.",
+		capabilities: ALL,
+	},
+	{
+		key: "president",
+		label: "President",
+		description: "The organization's top officer. Holds every capability.",
+		capabilities: ALL,
+	},
+	{
+		key: "staff",
+		label: "Staff",
+		description:
+			"General staff: inventory, donations, families, and staff management.",
+		capabilities: [...OPERATIONS, ...FAMILY, "staff.manage"],
+	},
+	{
+		key: "secretary",
+		label: "Secretary",
+		description:
+			"Records and appointments: inventory, donations, families, and staff management.",
+		capabilities: [...OPERATIONS, ...FAMILY, "staff.manage"],
+	},
+	{
+		key: "treasurer",
+		label: "Treasurer",
+		description:
+			"The only role with financial records. Also inventory, donations, and families.",
+		capabilities: [...OPERATIONS, ...FAMILY, "financial.read"],
+	},
+	{
+		key: "volunteer",
+		label: "Volunteer",
+		description:
+			"Inventory and donation intake. Never family data (CLAUDE.md constraint 2).",
+		capabilities: OPERATIONS,
+	},
+];
+
+/** The role the publisher and the bootstrap email receive. */
+export const BOOTSTRAP_ROLE_KEY = "super_admin";
+
+/** Role keys are stable machine names: lowercase, digits, underscores. */
+export function isValidRoleKey(key: string): boolean {
+	return /^[a-z][a-z0-9_]{1,39}$/.test(key);
 }
 
 /** Result of inspecting a caller's token. */
@@ -93,6 +151,16 @@ export function inspectToken(
 	return { kind: "trusted", email: normalizeEmail(email) };
 }
 
+/** What a connection turned out to be. Stored in access_event.outcome. */
+export const ACCESS_OUTCOMES = [
+	"staff", // already linked to an active staff member
+	"linked", // trusted token matched an invitation; link created on this connection
+	"invited_no_match", // trusted token, but no active staff invitation for that email
+	"untrusted_token", // a JWT we do not accept (issuer, audience, or unverified email)
+	"anonymous", // no token at all
+] as const;
+export type AccessOutcome = (typeof ACCESS_OUTCOMES)[number];
+
 /** Emails are matched case-insensitively and without surrounding whitespace. */
 export function normalizeEmail(email: string): string {
 	return email.trim().toLowerCase();
@@ -103,4 +171,25 @@ export function looksLikeEmail(email: string): boolean {
 	const e = normalizeEmail(email);
 	const at = e.indexOf("@");
 	return at > 0 && at < e.length - 1 && !e.includes(" ");
+}
+
+/**
+ * Build the JSON `details` string for an audit event from reducer
+ * arguments, dropping redacted (personal) fields. bigint becomes a decimal
+ * string so it survives JSON.
+ */
+export function auditDetails(
+	args: Record<string, unknown>,
+	redact: readonly string[] = [],
+	extra: Record<string, unknown> = {},
+): string {
+	const out: Record<string, unknown> = {};
+	for (const [k, v] of Object.entries(args)) {
+		if (redact.includes(k)) continue;
+		out[k] = v;
+	}
+	Object.assign(out, extra);
+	return JSON.stringify(out, (_k, v) =>
+		typeof v === "bigint" ? v.toString() : v,
+	);
 }

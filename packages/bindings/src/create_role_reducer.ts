@@ -11,6 +11,7 @@ import {
 } from "spacetimedb";
 
 export default {
-  staffId: __t.u64(),
-  roleKey: __t.string(),
+  key: __t.string(),
+  label: __t.string(),
+  description: __t.string(),
 };

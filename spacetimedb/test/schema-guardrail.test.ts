@@ -28,6 +28,8 @@ const NEVER_PUBLIC = [
 	"person",
 	"auth_provider_link",
 	"staff_member",
+	"audit_event",
+	"access_event",
 	"request",
 	"appointment",
 	"donation",

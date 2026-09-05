@@ -61,7 +61,7 @@ pnpm module:publish:local
 ```
 
 ```bash
-spacetime call closetkeeper-local --server local invite_staff '"you@example.org"' '"Your Name"' '"staff"' --no-config
+spacetime call closetkeeper-local --server local invite_staff '"you@example.org"' '"Your Name"' '"super_admin"' --no-config
 ```
 
 Then start the admin app on [http://localhost:7070](http://localhost:7070)

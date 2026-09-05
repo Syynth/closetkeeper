@@ -21,8 +21,9 @@ export function WhoAmI({ email }: { email: string | null }) {
 				<p>Checking your access…</p>
 			) : staff ? (
 				<p>
-					You are <strong>{staff.role}</strong>
-					{staff.active ? "" : " (deactivated)"}.
+					You are <strong>{staff.roleLabel}</strong>
+					{staff.active ? "" : " (deactivated)"}. Capabilities:{" "}
+					{staff.capabilities.join(", ")}
 				</p>
 			) : (
 				<p>

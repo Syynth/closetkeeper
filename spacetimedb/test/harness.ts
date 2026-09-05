@@ -66,6 +66,33 @@ export function describeTables(database: string): DescribedTable[] {
 	}));
 }
 
+export interface DescribedReducer {
+	name: string;
+	clientCallable: boolean;
+}
+
+/** Every reducer in the published database. Lifecycle hooks are not client-callable. */
+export function describeReducers(database: string): DescribedReducer[] {
+	const raw = spacetime(
+		["describe", database, "--server", LOCAL_SERVER, "--json"],
+		{
+			json: true,
+		},
+	);
+	const parsed = JSON.parse(raw) as {
+		sections: Array<Record<string, unknown>>;
+	};
+	const section = parsed.sections.find((s) => "Reducers" in s);
+	const reducers = (section?.Reducers ?? []) as Array<{
+		source_name: string;
+		visibility: Record<string, unknown[]>;
+	}>;
+	return reducers.map((r) => ({
+		name: r.source_name,
+		clientCallable: "ClientCallable" in r.visibility,
+	}));
+}
+
 /** Run a SQL query against the database and return the rows of the first result set. */
 export function sql<Row = Record<string, unknown>>(
 	database: string,

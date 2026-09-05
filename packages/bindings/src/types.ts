@@ -10,6 +10,35 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AccessEvent = __t.object("AccessEvent", {
+  id: __t.u64(),
+  at: __t.timestamp(),
+  identity: __t.identity(),
+  connectionId: __t.string(),
+  issuer: __t.string(),
+  subject: __t.string(),
+  email: __t.string(),
+  outcome: __t.string(),
+});
+export type AccessEvent = __Infer<typeof AccessEvent>;
+
+export const AccessEventPurgeSchedule = __t.object("AccessEventPurgeSchedule", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+});
+export type AccessEventPurgeSchedule = __Infer<typeof AccessEventPurgeSchedule>;
+
+export const AuditEvent = __t.object("AuditEvent", {
+  id: __t.u64(),
+  at: __t.timestamp(),
+  actorStaffId: __t.u64(),
+  action: __t.string(),
+  targetTable: __t.string(),
+  targetId: __t.u64(),
+  details: __t.string(),
+});
+export type AuditEvent = __Infer<typeof AuditEvent>;
+
 export const AuthProviderLink = __t.object("AuthProviderLink", {
   id: __t.u64(),
   identity: __t.identity(),
@@ -33,13 +62,40 @@ export const Person = __t.object("Person", {
 });
 export type Person = __Infer<typeof Person>;
 
+export const Role = __t.object("Role", {
+  id: __t.u64(),
+  key: __t.string(),
+  label: __t.string(),
+  description: __t.string(),
+  system: __t.bool(),
+  createdAt: __t.timestamp(),
+});
+export type Role = __Infer<typeof Role>;
+
+export const RoleCapability = __t.object("RoleCapability", {
+  id: __t.u64(),
+  roleId: __t.u64(),
+  capability: __t.string(),
+});
+export type RoleCapability = __Infer<typeof RoleCapability>;
+
 export const StaffMember = __t.object("StaffMember", {
   id: __t.u64(),
   personId: __t.u64(),
-  role: __t.string(),
+  roleId: __t.u64(),
   active: __t.bool(),
   invitedAt: __t.timestamp(),
   invitedBy: __t.u64(),
 });
 export type StaffMember = __Infer<typeof StaffMember>;
+
+export const StaffStanding = __t.object("StaffStanding", {
+  staffId: __t.u64(),
+  personId: __t.u64(),
+  roleKey: __t.string(),
+  roleLabel: __t.string(),
+  active: __t.bool(),
+  capabilities: __t.array(__t.string()),
+});
+export type StaffStanding = __Infer<typeof StaffStanding>;
 
