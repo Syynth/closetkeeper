@@ -320,3 +320,19 @@ Entries are appended at the bottom, newest last.
   recorded by the module. Cloudflare's request analytics in front of the
   admin URLs are the network-level substitute if ever needed. Per-connection
   logging is bounded; per-denied-call logging of anonymous callers is not.
+
+## The technical role is "system administrator"; president has staff-level access
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** minor/local
+- **WHAT:** The bootstrap role is keyed `system_admin` and labelled
+  "System administrator" (was `super_admin`). President is seeded with the
+  same bundle as staff and secretary (families, inventory, donations, staff
+  management); only the system administrator holds `staff.manage_sensitive`
+  and `role.manage` by default. No production data exists, so the key was
+  renamed rather than aliased.
+- **WHY:** The maintainer's call while reviewing the admin screens: the
+  president should not have more access than the secretary or treasurer,
+  and "system administrator" names what the technical role is for.
+  Access to the system is a job, not a rank.

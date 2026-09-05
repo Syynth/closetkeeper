@@ -1,4 +1,4 @@
-# Design proposal: configurable roles, super-admin, and the audit log
+# Design proposal: configurable roles, system administrator, and the audit log
 
 Status: **proposal**, 2026-09-05. Nothing here is built. Decisions taken from
 it go in `docs/decision-log.md`.
@@ -7,7 +7,7 @@ it go in `docs/decision-log.md`.
 
 1. Roles can be created and adjusted by the org without a republish, while
    the privacy constraints in `CLAUDE.md` cannot be relaxed casually.
-2. At least one account is a super-admin that can do everything, including
+2. At least one account is a system administrator that can do everything, including
    granting the protected capabilities.
 3. Every mutation is audited **by construction**. It must not be possible to
    add a reducer and forget the audit line; forgetting must fail CI.
@@ -52,13 +52,13 @@ staff_member
 ```
 
 `init` seeds the system roles. The org's real roles (2026-09-05, from the
-maintainer) are president, secretary, treasurer, staff, and volunteer. `super_admin` is a technical role
+maintainer) are president, secretary, treasurer, staff, and volunteer. `system_admin` is a technical role
 for bootstrap and recovery, not an org title.
 
 | role | seeded capabilities | notes |
 |---|---|---|
-| `super_admin` | all | publisher and bootstrap email; technical |
-| `president` | all | the org's top officer |
+| `system_admin` | all | publisher and bootstrap email; technical. Label: System administrator |
+| `president` | inventory.*, donation.*, family.*, staff.manage | the org's top officer; same access as staff |
 | `staff` | inventory.*, donation.*, family.*, staff.manage | general staff |
 | `secretary` | inventory.*, donation.*, family.*, staff.manage | records and appointments |
 | `treasurer` | inventory.*, donation.*, family.*, financial.read | the only role with financials |
@@ -69,7 +69,7 @@ family data; volunteer is the only role that does not. A `director` role
 (equivalent to staff) is deferred until it is needed; since roles are rows,
 adding it later is a reducer call, not a republish.
 
-Seeded bundles are starting points; a super-admin can adjust any role's
+Seeded bundles are starting points; a system administrator can adjust any role's
 capabilities later (subject to the protected-capability rule). System
 roles cannot be deleted, so this list is a commitment on names, not on
 permissions.
@@ -87,17 +87,17 @@ Some capabilities encode the non-negotiable constraints. They are marked
 - `staff.manage_sensitive` — granting protected capabilities to anyone
 
 Granting a protected capability to a role requires the caller to hold
-`staff.manage_sensitive`, which only `super_admin` has by default and which
-can only be granted by a super-admin. Every grant is an audited event. The
+`staff.manage_sensitive`, which only `system_admin` has by default and which
+can only be granted by a system administrator. Every grant is an audited event. The
 constraints stay configurable, but only by someone who is explicitly
 trusted with them, and never silently.
 
-### Super-admin
+### System administrator
 
-- `super_admin` is a system role holding every capability.
+- `system_admin` is a system role holding every capability.
 - `init` gives it to the publisher; the bootstrap invite in CI gives it to
   `BOOTSTRAP_STAFF_EMAIL`.
-- **The last active super-admin cannot be demoted or deactivated.** This
+- **The last active system administrator cannot be demoted or deactivated.** This
   generalizes today's "cannot change your own status" rule and closes the
   lockout hole where two admins deactivate each other.
 
@@ -109,10 +109,10 @@ trusted with them, and never silently.
 | `update_role(role_id, label, description)` | `role.manage` | |
 | `delete_role(role_id)` | `role.manage` | refuses system roles and roles in use |
 | `grant_capability(role_id, capability)` | `role.manage`; `staff.manage_sensitive` if protected | |
-| `revoke_capability(role_id, capability)` | `role.manage` | cannot strip `super_admin` |
+| `revoke_capability(role_id, capability)` | `role.manage` | cannot strip `system_admin` |
 | `invite_staff(email, display_name, role_key)` | `staff.manage`; `staff.manage_sensitive` if the role holds a protected capability | replaces the role-string version |
-| `set_staff_role(staff_id, role_key)` | same rule as invite | last-super-admin guard |
-| `set_staff_active(staff_id, active)` | `staff.manage` | last-super-admin guard |
+| `set_staff_role(staff_id, role_key)` | same rule as invite | last-system administrator guard |
+| `set_staff_active(staff_id, active)` | `staff.manage` | last-system administrator guard |
 
 ## The audit log
 
@@ -226,7 +226,7 @@ days), unlike audit events, which are kept.
 **Decided:** the email of a trusted-but-uninvited login is stored. It is
 the one field that makes "someone tried to get in" actionable (invite them,
 or don't). It is PII from a person who is not staff, so it is purged with
-the 90-day rule and never surfaced outside the super-admin screen.
+the 90-day rule and never surfaced outside the system administrator screen.
 
 ## Provenance (for later, but shaped now)
 
@@ -248,7 +248,7 @@ in that every movement is created through an audited reducer.
 
 ## Decisions taken from this proposal (2026-09-05)
 
-1. **The audit log is append-only for everyone, super-admin included.**
+1. **The audit log is append-only for everyone, system administrator included.**
    There is no reducer that deletes or edits `audit_event` rows, and none
    may be added. Retention purges detach references; they never delete
    events.
@@ -256,13 +256,13 @@ in that every movement is created through an audited reducer.
    and unknown callers are recorded once per connection in the separate
    access log instead, so the audit log cannot be spammed.
 3. **Roles:** president, secretary, treasurer, staff, volunteer, plus the
-   technical super_admin. `director` is deferred. Every role but volunteer sees family
+   technical system_admin. `director` is deferred. Every role but volunteer sees family
    data. See the seed table above.
 4. **An access log exists, separate from the audit log**, recording every
    connection at the identity level. IPs are not available to the module.
 
 5. **The access log stores the email of trusted-but-uninvited logins**,
-   purged on the 90-day rule and shown only on the super-admin screen.
+   purged on the 90-day rule and shown only on the system administrator screen.
 
 ## Still open
 

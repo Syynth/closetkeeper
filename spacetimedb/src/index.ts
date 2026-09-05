@@ -368,7 +368,7 @@ export const revokeCapability = defineAdminReducer(
 		const role = ctx.db.role.id.find(role_id);
 		if (role === null) throw new SenderError("no such role");
 		if (role.key === BOOTSTRAP_ROLE_KEY)
-			throw new SenderError("super_admin keeps every capability");
+			throw new SenderError("system_admin keeps every capability");
 		for (const rc of [...ctx.db.role_capability.role_id.filter(role_id)]) {
 			if (rc.capability === capability) ctx.db.role_capability.id.delete(rc.id);
 		}
