@@ -79,6 +79,34 @@ export const RoleCapability = __t.object("RoleCapability", {
 });
 export type RoleCapability = __Infer<typeof RoleCapability>;
 
+export const RoleOption = __t.object("RoleOption", {
+  roleId: __t.u64(),
+  key: __t.string(),
+  label: __t.string(),
+  description: __t.string(),
+  system: __t.bool(),
+  protected: __t.bool(),
+});
+export type RoleOption = __Infer<typeof RoleOption>;
+
+export const RoleOptions = __t.object("RoleOptions", {});
+export type RoleOptions = __Infer<typeof RoleOptions>;
+
+export const StaffDirectory = __t.object("StaffDirectory", {});
+export type StaffDirectory = __Infer<typeof StaffDirectory>;
+
+export const StaffDirectoryEntry = __t.object("StaffDirectoryEntry", {
+  staffId: __t.u64(),
+  personId: __t.u64(),
+  displayName: __t.string(),
+  email: __t.string(),
+  roleKey: __t.string(),
+  roleLabel: __t.string(),
+  active: __t.bool(),
+  invitedAt: __t.timestamp(),
+});
+export type StaffDirectoryEntry = __Infer<typeof StaffDirectoryEntry>;
+
 export const StaffMember = __t.object("StaffMember", {
   id: __t.u64(),
   personId: __t.u64(),

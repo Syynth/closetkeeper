@@ -1,7 +1,20 @@
+import {
+	Alert,
+	Button,
+	Card,
+	Container,
+	Group,
+	Stack,
+	Text,
+	Title,
+} from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "react-oidc-context";
+import { useSpacetimeDB } from "spacetimedb/react";
+import { Shell, useMyStaff, Wordmark } from "../components/Shell";
+import { SizeStrip, SizeTag } from "../components/SizeTag";
 import { ConnectedToDatabase } from "../db";
-import { WhoAmI } from "../whoami";
+import classes from "./index.module.css";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -10,35 +23,136 @@ function Home() {
 
 	if (auth.isLoading) {
 		return (
-			<main>
-				<h1>Closetkeeper</h1>
-				<p>Loading…</p>
-			</main>
+			<Container size="xs" className={classes.signIn}>
+				<Wordmark />
+				<Text c="dimmed" mt="md">
+					Loading…
+				</Text>
+			</Container>
 		);
 	}
 
 	if (!auth.isAuthenticated || !auth.user?.id_token) {
 		return (
-			<main>
-				<h1>Closetkeeper</h1>
-				<p>Staff and volunteer sign-in.</p>
-				<button type="button" onClick={() => void auth.signinRedirect()}>
-					Log in
-				</button>
-				{auth.error ? <p role="alert">{auth.error.message}</p> : null}
-			</main>
+			<SignIn
+				onSignIn={() => void auth.signinRedirect()}
+				error={auth.error?.message ?? null}
+			/>
 		);
 	}
 
 	return (
 		<ConnectedToDatabase token={auth.user.id_token}>
-			<main>
-				<h1>Closetkeeper</h1>
-				<WhoAmI email={auth.user.profile.email ?? null} />
-				<button type="button" onClick={() => void auth.signoutRedirect()}>
-					Log out
-				</button>
-			</main>
+			<Shell>
+				<Standing email={auth.user.profile.email ?? null} />
+			</Shell>
 		</ConnectedToDatabase>
+	);
+}
+
+/**
+ * The sign-in page has one job: get an invited person in. The strip of
+ * sizes says what this place is without a paragraph.
+ */
+function SignIn({
+	onSignIn,
+	error,
+}: {
+	onSignIn: () => void;
+	error: string | null;
+}) {
+	return (
+		<Container size="xs" className={classes.signIn}>
+			<Stack gap="lg">
+				<div>
+					<SizeTag>Klamath County</SizeTag>
+				</div>
+				<Title order={1} className={classes.title}>
+					Closet<span className={classes.titleAccent}>keeper</span>
+				</Title>
+				<Text size="lg" className={classes.lede}>
+					Log donations, keep the shelves counted, and get the right sizes to
+					the right kids.
+				</Text>
+				<SizeStrip />
+				<Stack gap="xs" mt="sm">
+					<Button onClick={onSignIn} fullWidth>
+						Email me a sign-in link
+					</Button>
+					<Text size="sm" c="dimmed">
+						Only invited staff and volunteers can sign in. No password; the link
+						is the key.
+					</Text>
+				</Stack>
+				{error ? (
+					<Alert color="clay" title="Sign-in didn't complete" role="alert">
+						{error}
+					</Alert>
+				) : null}
+			</Stack>
+		</Container>
+	);
+}
+
+/** What the database thinks of the person in front of it. */
+function Standing({ email }: { email: string | null }) {
+	const db = useSpacetimeDB();
+	const { me, ready } = useMyStaff();
+
+	if (!db.isActive) {
+		return (
+			<Text c="dimmed" aria-live="polite">
+				Connecting to the closet…
+			</Text>
+		);
+	}
+	if (!ready) {
+		return (
+			<Text c="dimmed" aria-live="polite">
+				Checking your access…
+			</Text>
+		);
+	}
+	if (!me) {
+		return (
+			<Card>
+				<Stack gap="sm">
+					<Title order={2}>This email isn't on the staff list yet</Title>
+					<Text>
+						You're signed in{email ? ` as ${email}` : ""}, but nobody has added
+						that address as staff or a volunteer. Ask a staff member to add it,
+						then sign in again.
+					</Text>
+				</Stack>
+			</Card>
+		);
+	}
+	return (
+		<Stack gap="lg">
+			<div>
+				<Text c="dimmed" size="sm">
+					Signed in{email ? ` as ${email}` : ""}
+				</Text>
+				<Title order={2} mt={4}>
+					You're set up as <SizeTag tone="pine">{me.roleLabel}</SizeTag>
+					{me.active ? "" : " (deactivated)"}
+				</Title>
+			</div>
+			<Card>
+				<Text fw={600} mb="xs">
+					What this role can do
+				</Text>
+				<Group gap="xs">
+					{me.capabilities.map((c) => (
+						<SizeTag key={c} tone="muted">
+							{c}
+						</SizeTag>
+					))}
+				</Group>
+			</Card>
+			<Text c="dimmed" size="sm">
+				Nothing else is built yet. Inventory, donations, and requests come next.
+			</Text>
+		</Stack>
 	);
 }

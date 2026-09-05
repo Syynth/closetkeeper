@@ -1,13 +1,25 @@
+@import "@fontsource-variable/atkinson-hyperlegible-next";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@mantine/core/styles.css";
+
 * {
 	box-sizing: border-box;
 }
 
-body {
-	margin: 0;
-	font-family: system-ui, sans-serif;
+html {
+	/* Slightly larger base than the browser default: read at arm's length. */
+	font-size: 17px;
 }
 
-main {
-	width: min(42rem, calc(100% - 2rem));
-	margin: 4rem auto;
+body {
+	margin: 0;
+	background: var(--mantine-color-body);
+	color: var(--mantine-color-text);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard focus is always visible; the ring uses the working color. */
+:focus-visible {
+	outline: 3px solid var(--mantine-color-pine-5);
+	outline-offset: 2px;
 }

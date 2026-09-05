@@ -8,6 +8,7 @@ import {
 	type InferSchema,
 	type ReducerCtx,
 	SenderError,
+	type ViewCtx,
 } from "spacetimedb/server";
 import {
 	type AccessOutcome,
@@ -20,6 +21,8 @@ import { TRUSTED_CLIENT_IDS, TRUSTED_ISSUER } from "./config";
 import type spacetimedb from "./schema";
 
 export type Ctx = ReducerCtx<InferSchema<typeof spacetimedb>>;
+/** Read-only helpers accept a view context too, so views can resolve the caller. */
+export type ReadCtx = Ctx | ViewCtx<InferSchema<typeof spacetimedb>>;
 
 export interface StaffContext {
 	personId: bigint;
@@ -30,7 +33,10 @@ export interface StaffContext {
 }
 
 /** Every capability a role holds, ignoring unknown strings defensively. */
-export function roleCapabilities(ctx: Ctx, roleId: bigint): Set<Capability> {
+export function roleCapabilities(
+	ctx: ReadCtx,
+	roleId: bigint,
+): Set<Capability> {
 	const out = new Set<Capability>();
 	for (const rc of ctx.db.role_capability.role_id.filter(roleId)) {
 		if (isCapability(rc.capability)) out.add(rc.capability);
@@ -39,7 +45,7 @@ export function roleCapabilities(ctx: Ctx, roleId: bigint): Set<Capability> {
 }
 
 /** Whether a role holds any protected capability (see auth-rules.ts). */
-export function roleHoldsProtected(ctx: Ctx, roleId: bigint): boolean {
+export function roleHoldsProtected(ctx: ReadCtx, roleId: bigint): boolean {
 	for (const c of roleCapabilities(ctx, roleId)) {
 		if (isProtected(c)) return true;
 	}
@@ -47,7 +53,7 @@ export function roleHoldsProtected(ctx: Ctx, roleId: bigint): boolean {
 }
 
 /** Resolve the caller to an active staff member, or null. Never throws. */
-export function resolveStaff(ctx: Ctx): StaffContext | null {
+export function resolveStaff(ctx: ReadCtx): StaffContext | null {
 	const link = ctx.db.auth_provider_link.identity.find(ctx.sender);
 	if (link === null) return null;
 	const staff = ctx.db.staff_member.person_id.find(link.person_id);

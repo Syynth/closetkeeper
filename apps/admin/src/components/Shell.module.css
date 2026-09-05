@@ -1,0 +1,66 @@
+.frame {
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+}
+
+.header {
+	background: var(--mantine-color-white);
+	border-bottom: 1px solid var(--mantine-color-bark-1);
+}
+
+.headerInner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	min-height: 3.5rem;
+}
+
+.wordmark {
+	font-family: var(--mantine-font-family-headings);
+	font-weight: 800;
+	font-size: 1.35rem;
+	letter-spacing: -0.02em;
+	color: var(--mantine-color-bark-9);
+}
+
+.wordmarkAccent {
+	color: var(--mantine-color-pine-7);
+}
+
+.nav {
+	display: flex;
+	gap: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.navLink {
+	display: inline-flex;
+	align-items: center;
+	min-height: 2.75rem;
+	padding: 0 0.85rem;
+	border-radius: var(--mantine-radius-md);
+	font-weight: 600;
+	color: var(--mantine-color-bark-7);
+	text-decoration: none;
+}
+
+.navLink:hover {
+	background: var(--mantine-color-pine-0);
+}
+
+.navLink[data-status="active"] {
+	color: var(--mantine-color-pine-8);
+	box-shadow: inset 0 -3px 0 var(--mantine-color-tape-4);
+}
+
+.main {
+	flex: 1;
+	padding-top: 1.5rem;
+	padding-bottom: 3rem;
+}
+
+.footer {
+	padding: 1rem 0 1.5rem;
+}
