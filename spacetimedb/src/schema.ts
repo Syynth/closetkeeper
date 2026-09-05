@@ -72,3 +72,6 @@ const staff_member = table(
 const spacetimedb = schema({ person, auth_provider_link, staff_member });
 
 export default spacetimedb;
+
+/** Row type of staff_member, for views that return one. */
+export const staffMemberRow = staff_member.rowType;

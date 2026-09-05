@@ -1,4 +1,6 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { AuthProvider } from "react-oidc-context";
+import { oidcConfig } from "../auth";
 
 import "../styles.css";
 
@@ -7,5 +9,9 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-	return <Outlet />;
+	return (
+		<AuthProvider {...oidcConfig()}>
+			<Outlet />
+		</AuthProvider>
+	);
 }

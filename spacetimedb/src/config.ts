@@ -14,7 +14,10 @@ export const TRUSTED_ISSUER = "https://auth.spacetimedb.com/oidc";
  * audience does not include one of these is treated as unauthenticated, so a
  * token minted for some other application can never resolve to staff.
  *
- * Empty until the SpacetimeAuth project exists. While empty, no browser login
- * can link to a staff account, which is the safe failure.
+ * One project and one client serve every environment (local, dev, prod);
+ * the client's allowed redirect URIs are what differ. Managed in the
+ * Maincloud dashboard under closetkeeper-dev → SpacetimeAuth → Clients.
  */
-export const TRUSTED_CLIENT_IDS: readonly string[] = [];
+export const TRUSTED_CLIENT_IDS: readonly string[] = [
+	"client_034JkHw9y08pQVcNeFcW3u",
+];
