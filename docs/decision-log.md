@@ -232,3 +232,25 @@ Entries are appended at the bottom, newest last.
   deployment. Cost: `init` runs once per database, so a database created
   before this seed existed must be recreated (done for `closetkeeper-dev`
   on 2026-09-05; production did not yet exist).
+
+## Admin app deploys from GitHub Actions, not Cloudflare Workers Builds
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** infra
+- **SCOPE:** moderate
+- **WHAT:** The admin SPA deploys via `wrangler` from GitHub Actions on the
+  same triggers as the module: merge to `main` → `closetkeeper-admin-dev`
+  Worker (dev database); `v*` tag → `closetkeeper-admin` Worker
+  (production database); pull requests upload a preview version under a
+  single stable alias and the URL is commented on the PR. Cloudflare Workers
+  Builds, chosen earlier for its per-PR previews, is not used.
+- **WHY:** Workers Builds deploys production on every push to a branch,
+  while the module reaches production only on tags; the admin would have
+  shipped against reducers and views not yet in the production database.
+  Putting both deploys in one workflow system with one set of triggers keeps
+  them in lockstep, keeps all deploy configuration in the repository rather
+  than a dashboard, and still yields per-PR previews through
+  `wrangler versions upload`. Cost: one Cloudflare API token as a GitHub
+  secret. Two Workers mirror the two databases exactly. A single preview
+  alias is used because SpacetimeAuth redirect URIs must match exactly, so
+  one registration covers every preview.

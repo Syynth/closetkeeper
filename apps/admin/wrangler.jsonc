@@ -1,5 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
+	// CI overrides this with --name: closetkeeper-admin-dev on merges to main,
+	// closetkeeper-admin on v* tags. See .github/workflows/deploy-admin.yml.
 	"name": "closetkeeper-admin",
 	"compatibility_date": "2026-09-05",
 	// Static-asset-only Worker. There is deliberately no `main`: the admin UI
@@ -9,5 +11,11 @@
 	"assets": {
 		"directory": "./dist",
 		"not_found_handling": "single-page-application"
-	}
+	},
+	// Serve on <name>.<account>.workers.dev; a custom domain can be added
+	// later without touching this file. Preview URLs are public, which is
+	// acceptable because a login there grants nothing unless the person is
+	// invited staff.
+	"workers_dev": true,
+	"preview_urls": true
 }

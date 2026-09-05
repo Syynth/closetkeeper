@@ -98,7 +98,14 @@ Everything deploys from CI; nothing is deployed from a terminal.
 |---|---|---|
 | Module | merge to `main` touching `spacetimedb/` | `closetkeeper-dev` on Maincloud |
 | Module | push a `v*` tag | `closetkeeper` (production) on Maincloud |
-| Admin app | merge to `main`, and a preview per pull request | Cloudflare Workers Builds |
+| Admin app | pull request | preview version on the `closetkeeper-admin-dev` Worker, URL commented on the PR |
+| Admin app | merge to `main` | `closetkeeper-admin-dev` Worker, pointed at `closetkeeper-dev` |
+| Admin app | push a `v*` tag | `closetkeeper-admin` Worker, pointed at `closetkeeper` |
+
+Module and admin share triggers so they reach production together. Every
+deployed admin origin (plus `/callback`) must be listed as a redirect URI on
+the SpacetimeAuth client, or login there fails; previews use one stable alias
+(`preview-closetkeeper-admin-dev…`) so that registration happens once.
 
 To release the module to production, tag the commit on `main`:
 
@@ -112,6 +119,7 @@ git tag v0.1.0 && git push origin v0.1.0
 |---|---|---|
 | GitHub environments `dev` and `prod` | `SPACETIMEDB_TOKEN` | Token for the identity that publishes. `spacetime login show --token`. |
 | GitHub repository secret | `BOOTSTRAP_STAFF_EMAIL` | Optional. Invited as the first real staff member after every publish. |
+| GitHub repository secrets | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Token from the "Edit Cloudflare Workers" template. Deploys the admin app. |
 | `spacetimedb/src/config.ts` | `TRUSTED_CLIENT_IDS` | The SpacetimeAuth client ID(s). Not secret; committed. |
 
 Whoever publishes a database first is seeded as its first staff member.
