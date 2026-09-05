@@ -225,15 +225,15 @@ by a super-admin without a republish. Capabilities are code
 
 | Role        | Inventory | Donations | Families | Financial | Staff mgmt |
 |-------------|-----------|-----------|----------|-----------|------------|
-| super_admin | yes       | yes       | yes      | yes       | yes, incl. protected |
-| president   | yes       | yes       | yes      | yes       | yes, incl. protected |
+| system_admin | yes      | yes       | yes      | yes       | yes, incl. protected |
+| president   | yes       | yes       | yes      | no        | yes        |
 | staff       | yes       | yes       | yes      | no        | yes        |
 | secretary   | yes       | yes       | yes      | no        | yes        |
 | treasurer   | yes       | yes       | yes      | read      | no         |
 | volunteer   | yes       | yes       | **no**   | no        | no         |
 
 Family data and role management are **protected capabilities**: only a
-holder of `staff.manage_sensitive` (super_admin, president) can grant them
+holder of `staff.manage_sensitive` (the system administrator) can grant them
 or place someone in a role that has them. Volunteers are often community
 members who know the families personally. The restriction is what lets the
 org recruit help without asking families to accept that neighbors will see
