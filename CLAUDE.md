@@ -29,7 +29,10 @@ decision from the maintainer.
 
 ## Stack
 
-- **Backend:** SpacetimeDB (Rust module). All writes go through reducers.
+- **Backend:** SpacetimeDB module written in **TypeScript**, deployed to
+  **Maincloud**. All writes go through reducers. The whole stack is one
+  language and one toolchain — module, generated bindings, admin client, and
+  Worker — so there is no second runtime to context-switch into.
 - **Frontend:** React Router v7 (framework mode), deployed to Cloudflare Workers
   with static assets. Not Cloudflare Pages — Workers is the current
   recommendation for new projects and has feature parity plus Durable Objects,
@@ -97,6 +100,15 @@ SpacetimeDB modules are exposed to the open internet and anyone can connect. A
 client with no token gets a fresh anonymous identity. Authentication gives you a
 stable identity and **no authorization whatsoever**.
 
+- **Provider: SpacetimeDB's built-in identity, to start.** A third-party OIDC
+  provider may replace it later; everything below is written to survive that
+  swap. Details of the validation below are still under design — do not treat
+  the specifics as settled.
+- **Anyone can obtain a valid SpacetimeDB identity.** With the built-in
+  provider there is no signup gate we control, so authentication proves only
+  that a caller is *someone*, not that they are *ours*. The `staff_member`
+  allowlist therefore carries the entire authorization burden. Treat a missing
+  allowlist check as a data breach, not a bug.
 - In `client_connected`, validate the JWT `iss` matches our issuer and the `aud`
   claim matches our client ID. Without this, a token from any unrelated OIDC
   provider authenticates fine.
