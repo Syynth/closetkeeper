@@ -254,3 +254,21 @@ Entries are appended at the bottom, newest last.
   secret. Two Workers mirror the two databases exactly. A single preview
   alias is used because SpacetimeAuth redirect URIs must match exactly, so
   one registration covers every preview.
+
+## Mantine for the admin app
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** admin
+- **SCOPE:** moderate
+- **WHAT:** The admin SPA uses Mantine (`@mantine/core`, `@mantine/hooks`,
+  `@mantine/form`) with `postcss-preset-mantine`. Considered and set aside:
+  Chakra UI v3, shadcn/ui + Tailwind, Park UI (Ark + Panda), plain CSS.
+- **WHY:** The maintainer's condition was that pages stay reasonably fast
+  and SSR stays possible. Mantine 7+ styles with CSS modules and a PostCSS
+  preset, so there is no runtime CSS-in-JS and nothing SSR-specific to
+  manage; that ruled out Chakra's Emotion styling. Against shadcn +
+  Tailwind, Mantine is batteries-included: forms, mobile-friendly inputs,
+  and layout come from one dependency rather than being assembled, which
+  matters for screens built at 10pm. One library to keep current under the
+  latest-everything policy. Its peer range pins React minor versions, so
+  React and Mantine upgrades move together.
