@@ -51,14 +51,24 @@ staff_member
   role          string   →  role_id  u64 index        (replaces the string column)
 ```
 
-`init` seeds four system roles:
+`init` seeds the system roles. The org's real roles (2026-09-05, from the
+maintainer) are president, secretary, treasurer, director, and volunteer;
+director is equivalent to general staff. `super_admin` is a technical role
+for bootstrap and recovery, not an org title.
 
-| role | capabilities |
-|---|---|
-| `super_admin` | all |
-| `staff` | inventory.*, donation.*, family.*, staff.manage |
-| `volunteer` | inventory.*, donation.* |
-| `treasurer` | inventory.read, donation.read, financial.read |
+| role | seeded capabilities | notes |
+|---|---|---|
+| `super_admin` | all | publisher and bootstrap email; technical |
+| `president` | all | the org's top officer |
+| `director` | inventory.*, donation.*, family.*, staff.manage | general staff |
+| `secretary` | inventory.*, donation.*, family.*, staff.manage | records and appointments |
+| `treasurer` | inventory.read, donation.read, financial.read | never family data |
+| `volunteer` | inventory.*, donation.* | never family data |
+
+Seeded bundles are starting points; a super-admin can adjust any role's
+capabilities later (subject to the protected-capability rule). System
+roles cannot be deleted, so this list is a commitment on names, not on
+permissions.
 
 `requireStaff(ctx, capability)` resolves sender → link → staff_member → role
 → role_capability, exactly as today plus one hop.
@@ -189,12 +199,20 @@ in that every movement is created through an audited reducer.
   two guardrails, and the audit-event integration tests. The admin UI's
   `my_staff` view returns the role key and label instead of a string.
 
-## Open questions for the maintainer
+## Decisions taken from this proposal (2026-09-05)
 
-1. Should a super-admin be able to **delete** audit events, or is the log
-   append-only for everyone? (Proposal: append-only. Nobody deletes.)
-2. Should denied attempts by **anonymous** callers be logged? They carry no
-   staff id and could be spammed. (Proposal: no. Log denials only for
-   callers who resolved to a staff member but lacked the capability.)
-3. Is `treasurer` a real role today, or a placeholder from the brainstorm?
-   Seeding it costs nothing, but a system role cannot be deleted later.
+1. **The audit log is append-only for everyone, super-admin included.**
+   There is no reducer that deletes or edits `audit_event` rows, and none
+   may be added. Retention purges detach references; they never delete
+   events.
+2. **Anonymous denials are not logged.** Denials are logged only for
+   callers who resolved to a staff member but lacked the capability. An
+   anonymous caller carries no staff id and could spam the log.
+3. **Roles:** president, secretary, treasurer, director, volunteer, plus the
+   technical super_admin. See the seed table above.
+
+## Still open
+
+- The exact seeded capabilities per role above are my best guess and need
+  the maintainer's confirmation; they are cheap to change until launch and
+  editable by a super-admin after.
