@@ -73,7 +73,7 @@
 
 .blink {
 	animation-name: blink;
-	animation-timing-function: steps(1, end);
+	animation-timing-function: ease-in-out;
 	animation-iteration-count: infinite;
 }
 
@@ -97,12 +97,12 @@
 
 @keyframes blink {
 	0%,
-	58% {
+	54% {
 		background: var(--mantine-color-tape-4);
 		color: var(--mantine-color-bark-9);
 	}
-	64%,
-	90% {
+	62%,
+	88% {
 		background: var(--mantine-color-pine-7);
 		color: var(--mantine-color-white);
 	}
