@@ -71,12 +71,26 @@ in [`spacetimedb/test/schema-guardrail.test.ts`](spacetimedb/test/schema-guardra
 
 ## Deploying
 
-The admin app deploys through Cloudflare Workers Builds on push to `main`,
-with a preview per pull request. The module publishes to the `closetkeeper-dev`
-database from CI. **Production module publishes are done by a person from a
-terminal, never by CI**: a schema change that conflicts with existing rows is a
-data-destroying publish, and the CLI's `--delete-data` flag must never be
-passed against production.
+Everything deploys from CI; nothing is deployed from a terminal.
+
+| What | When | Where |
+|---|---|---|
+| Module | merge to `main` touching `spacetimedb/` | `closetkeeper-dev` on Maincloud |
+| Module | push a `v*` tag | `closetkeeper` (production) on Maincloud |
+| Admin app | merge to `main`, and a preview per pull request | Cloudflare Workers Builds |
+
+To release the module to production, tag the commit on `main`:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+**Production never receives `--delete-data`.** A schema change that would
+require a migration or destroy rows makes the CLI abort the publish
+non-interactively (verified; see the decision log), so the production job
+fails and leaves the data alone. When that happens, the change needs a
+deliberate migration, not the flag. The dev database holds no real data and
+wipes itself on conflict instead.
 
 ## License
 

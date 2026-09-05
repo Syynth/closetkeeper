@@ -170,3 +170,23 @@ Entries are appended at the bottom, newest last.
   exactly what the allowlist and gap report depend on; a divergence there
   would let a wrong test pass. At garage scale, integration tests against the
   real host cost seconds. Revisit when the suite is slow enough to hurt.
+
+## Production module publishes are automated from CI, on release tags
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** infra
+- **SCOPE:** moderate
+- **WHAT:** Merges to `main` that touch the module publish to `closetkeeper-dev`
+  from GitHub Actions. Pushing a `v*` tag publishes that commit to the
+  production database `closetkeeper`, also from GitHub Actions, with no
+  approval click. Supersedes the earlier "production publishes are a human
+  action from a terminal" policy. Production runs under a `prod` GitHub
+  environment restricted to `v*` tags, so no branch build can reach it.
+- **WHY:** The maintainer wants deployments automated rather than dependent
+  on someone remembering a terminal command; a tag is a deliberate act
+  without being a deploy command. Verified 2026-09-05 against a local
+  instance that the CLI refuses a non-interactive publish requiring a
+  migration or data deletion unless `--delete-data` is passed, even with
+  every other confirmation skipped, so the production job can never destroy
+  data by itself. An incompatible schema change fails the job and is handled
+  deliberately; production never receives `--delete-data`.

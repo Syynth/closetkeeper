@@ -1,0 +1,97 @@
+# Publishes the SpacetimeDB module.
+#
+#   push to main touching spacetimedb/  ->  closetkeeper-dev   (environment: dev)
+#   push of a v* tag                    ->  closetkeeper       (environment: prod)
+#
+# Production never receives --delete-data. The CLI refuses a non-interactive
+# publish that would require a migration or data deletion unless that flag is
+# passed (verified 2026-09-05, see docs/decision-log.md), so an incompatible
+# schema change fails this job and leaves production untouched. Handle such a
+# change deliberately; do not "fix" it by adding the flag here.
+#
+# Dev holds no real data, so it passes --delete-data=on-conflict and wipes
+# itself rather than blocking on a conflicting change.
+#
+# Each environment needs the SPACETIMEDB_TOKEN secret for an identity that
+# owns its database. The prod environment is restricted to v* tags in the
+# repository settings, so a branch build cannot reach it even by mistake.
+
+name: Publish module
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - spacetimedb/**
+      - .github/workflows/publish-module.yml
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    name: Publish to closetkeeper-dev
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: dev
+    concurrency:
+      group: publish-dev
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install SpacetimeDB CLI
+        run: |
+          curl -sSf https://install.spacetimedb.com | sh -s -- --yes
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile
+      - name: Log in
+        run: spacetime login --token "$SPACETIMEDB_TOKEN"
+        env:
+          SPACETIMEDB_TOKEN: ${{ secrets.SPACETIMEDB_TOKEN }}
+      - name: Publish
+        run: >
+          spacetime publish closetkeeper-dev
+          --server maincloud
+          --module-path spacetimedb
+          --delete-data=on-conflict
+          --yes=remote,skip-login,break-clients,delete-data
+
+  prod:
+    name: Publish to closetkeeper (production)
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: prod
+    concurrency:
+      group: publish-prod
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install SpacetimeDB CLI
+        run: |
+          curl -sSf https://install.spacetimedb.com | sh -s -- --yes
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile
+      - name: Log in
+        run: spacetime login --token "$SPACETIMEDB_TOKEN"
+        env:
+          SPACETIMEDB_TOKEN: ${{ secrets.SPACETIMEDB_TOKEN }}
+      - name: Publish
+        # No --delete-data, ever. See the header comment.
+        run: >
+          spacetime publish closetkeeper
+          --server maincloud
+          --module-path spacetimedb
+          --yes=remote,skip-login,break-clients
