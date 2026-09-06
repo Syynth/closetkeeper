@@ -101,8 +101,11 @@ function More() {
 					) : null}
 				</ListGroup>
 			) : null}
-			{can("access.read") ? (
+			{can("access.read") || can("staff.manage") ? (
 				<ListGroup label="Records">
+					{can("staff.manage") ? (
+						<ListRow title="Audit log" detail="who did what" to="/audit" />
+					) : null}
 					<ListRow
 						title="Access log"
 						detail="who signed in, who tried"

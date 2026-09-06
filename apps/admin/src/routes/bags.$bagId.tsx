@@ -76,6 +76,7 @@ function OpenBag({ bag, lines }: { bag: BagRow; lines: LineRow[] }) {
 	const [count, setCount] = useState(1);
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [justAdded, setJustAdded] = useState<string | null>(null);
 
 	if (!vocab.ready) return null;
 	if (!can("inventory.write")) {
@@ -125,6 +126,9 @@ function OpenBag({ bag, lines }: { bag: BagRow; lines: LineRow[] }) {
 	const why =
 		binId === null && suggested ? suggested.why : "where you last put some";
 
+	const sizeLabelOf = (id: bigint) =>
+		vocab.sizes.find((s) => s.sizeId === id)?.label ?? "";
+
 	const add = async () => {
 		if (!chosen || !bin) return;
 		setBusy(true);
@@ -139,8 +143,13 @@ function OpenBag({ bag, lines }: { bag: BagRow; lines: LineRow[] }) {
 				locationId: bin.locationId,
 				count,
 			});
+			// The selection stays: a bag is many lines, and the next one is
+			// usually the same category in a different size. Only the count
+			// resets, because that is the part that is always different.
+			setJustAdded(
+				`${count} added${sizeLabelOf(chosen.sizeId) ? ` · ${sizeLabelOf(chosen.sizeId)}` : ""}`,
+			);
 			setCount(1);
-			setSizeId(null);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
 		} finally {
@@ -234,9 +243,14 @@ function OpenBag({ bag, lines }: { bag: BagRow; lines: LineRow[] }) {
 						loading={busy}
 						onClick={add}
 					>
-						Add {count}
+						{chosen ? `Add ${count}` : "Pick all four"}
 					</Button>
 				</Group>
+				{justAdded ? (
+					<Text size="sm" c="pine.7" fw={700} aria-live="polite">
+						{justAdded}. Pick another size, or change the category.
+					</Text>
+				) : null}
 
 				{error ? (
 					<Alert color="clay" role="alert">
@@ -251,22 +265,36 @@ function OpenBag({ bag, lines }: { bag: BagRow; lines: LineRow[] }) {
 							Nothing yet.
 						</Text>
 					) : (
-						<Group gap="xs">
+						<Stack gap={0}>
 							{lines.map((l) => (
-								<button
+								<Group
 									key={String(l.lineId)}
-									type="button"
-									className={classes.lineTag}
-									onClick={() => void removeLine({ lineId: l.lineId })}
-									title="Remove this line"
+									justify="space-between"
+									wrap="nowrap"
+									className={classes.line}
 								>
-									<SizeTag>
-										{l.categoryLabel} · {l.sizeLabel} · {l.genderLabel} ×
-										{l.count}
-									</SizeTag>
-								</button>
+									<Text>
+										{l.categoryLabel} · {l.sizeLabel} · {l.genderLabel} ·{" "}
+										{l.conditionLabel}
+										<Text component="span" c="dimmed" size="sm">
+											{" "}
+											→ {l.locationLabel}
+										</Text>
+									</Text>
+									<Group gap="sm" wrap="nowrap">
+										<Text fw={700}>{l.count}</Text>
+										<button
+											type="button"
+											className={classes.remove}
+											aria-label={`Remove ${l.categoryLabel} ${l.sizeLabel}`}
+											onClick={() => void removeLine({ lineId: l.lineId })}
+										>
+											×
+										</button>
+									</Group>
+								</Group>
 							))}
-						</Group>
+						</Stack>
 					)}
 				</Stack>
 
