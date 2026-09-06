@@ -74,6 +74,7 @@ type Dest = {
 		| "/roles"
 		| "/access"
 		| "/audit"
+		| "/export"
 		| "/account";
 	label: string;
 	group: string;
@@ -100,6 +101,8 @@ function useDestinations(): Dest[] {
 		out.push({ to: "/audit", label: "Audit log", group: "Records" });
 	if (can("access.read"))
 		out.push({ to: "/access", label: "Access log", group: "Records" });
+	if (can("inventory.read"))
+		out.push({ to: "/export", label: "Export", group: "Records" });
 	out.push({ to: "/account", label: "Account", group: "You" });
 	return out;
 }

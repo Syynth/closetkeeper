@@ -15,6 +15,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as ConditionsRouteImport } from './routes/conditions'
+import { Route as ExportRouteImport } from './routes/export'
 import { Route as GendersRouteImport } from './routes/genders'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as WelcomeRouteImport } from './routes/welcome'
@@ -59,6 +60,11 @@ const CallbackRoute = CallbackRouteImport.update({
 const ConditionsRoute = ConditionsRouteImport.update({
   id: '/conditions',
   path: '/conditions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExportRoute = ExportRouteImport.update({
+  id: '/export',
+  path: '/export',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GendersRoute = GendersRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuditRoute
   '/callback': typeof CallbackRoute
   '/conditions': typeof ConditionsRoute
+  '/export': typeof ExportRoute
   '/genders': typeof GendersRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuditRoute
   '/callback': typeof CallbackRoute
   '/conditions': typeof ConditionsRoute
+  '/export': typeof ExportRoute
   '/genders': typeof GendersRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/audit': typeof AuditRoute
   '/callback': typeof CallbackRoute
   '/conditions': typeof ConditionsRoute
+  '/export': typeof ExportRoute
   '/genders': typeof GendersRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/callback'
     | '/conditions'
+    | '/export'
     | '/genders'
     | '/more'
     | '/welcome'
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/callback'
     | '/conditions'
+    | '/export'
     | '/genders'
     | '/more'
     | '/welcome'
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/callback'
     | '/conditions'
+    | '/export'
     | '/genders'
     | '/more'
     | '/welcome'
@@ -286,6 +298,7 @@ export interface RootRouteChildren {
   AuditRoute: typeof AuditRoute
   CallbackRoute: typeof CallbackRoute
   ConditionsRoute: typeof ConditionsRoute
+  ExportRoute: typeof ExportRoute
   GendersRoute: typeof GendersRoute
   MoreRoute: typeof MoreRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/conditions'
       fullPath: '/conditions'
       preLoaderRoute: typeof ConditionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/export': {
+      id: '/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof ExportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/genders': {
@@ -462,6 +482,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuditRoute: AuditRoute,
   CallbackRoute: CallbackRoute,
   ConditionsRoute: ConditionsRoute,
+  ExportRoute: ExportRoute,
   GendersRoute: GendersRoute,
   MoreRoute: MoreRoute,
   WelcomeRoute: WelcomeRoute,
