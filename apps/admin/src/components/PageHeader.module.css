@@ -1,0 +1,35 @@
+.header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 3rem;
+	margin-bottom: 1rem;
+}
+
+.back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-left: -0.6rem;
+	border-radius: var(--mantine-radius-md);
+	color: var(--mantine-color-pine-7);
+}
+
+.back:hover {
+	background: var(--mantine-color-pine-0);
+}
+
+.title {
+	flex: 1;
+	margin: 0;
+	font-size: 1.6rem;
+	line-height: 1.1;
+}
+
+.right {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}

@@ -1,0 +1,17 @@
+.chip {
+	min-height: 2.5rem;
+	padding: 0 0.85rem;
+	border: 1px solid var(--mantine-color-bark-2);
+	border-radius: var(--mantine-radius-md);
+	background: var(--mantine-color-white);
+	font: inherit;
+	font-weight: 600;
+	color: var(--mantine-color-bark-7);
+	cursor: pointer;
+}
+
+.chip[data-on] {
+	background: var(--mantine-color-pine-7);
+	border-color: var(--mantine-color-pine-7);
+	color: var(--mantine-color-white);
+}

@@ -1,0 +1,20 @@
+.switchRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	min-height: 3.25rem;
+	padding: 0.35rem 0.25rem;
+	border-bottom: 1px solid var(--mantine-color-bark-1);
+}
+
+.switchLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 1.02rem;
+}
+
+.lock {
+	color: var(--mantine-color-bark-5);
+}
