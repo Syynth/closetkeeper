@@ -94,13 +94,15 @@ function MarqueeRow({
 	];
 	// Turns are spread evenly across the cycle but handed out in a scrambled
 	// order, so a quarter of the tags are green at once (about three of the
-	// visible ones) and neighbours rarely are.
-	const turns = doubled
+	// visible ones) and neighbours rarely are. Both copies of a size share
+	// one phase: when the track wraps, the tag that slides in is in the same
+	// state as the one that slid out, so the loop point is invisible.
+	const turns = sizes
 		.map((_, i) => ({ i, r: jitter(i, seed) }))
 		.sort((a, b) => a.r - b.r)
 		.map((x) => x.i);
 	const offsetOf = new Map(
-		turns.map((i, rank) => [i, (rank / doubled.length) * CYCLE_SECONDS]),
+		turns.map((i, rank) => [i, (rank / sizes.length) * CYCLE_SECONDS]),
 	);
 	return (
 		<div className={classes.marquee} data-direction={direction}>
@@ -112,7 +114,7 @@ function MarqueeRow({
 						className={classes.blink}
 						style={{
 							animationDuration: `${CYCLE_SECONDS}s`,
-							animationDelay: `-${(offsetOf.get(i) ?? 0).toFixed(2)}s`,
+							animationDelay: `-${(offsetOf.get(i % sizes.length) ?? 0).toFixed(2)}s`,
 						}}
 					>
 						{s}
