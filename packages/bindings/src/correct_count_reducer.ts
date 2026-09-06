@@ -12,6 +12,7 @@ import {
 
 export default {
   slotId: __t.u64(),
+  locationId: __t.u64(),
   onHand: __t.u32(),
   note: __t.string(),
 };

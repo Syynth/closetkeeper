@@ -118,10 +118,12 @@ describe("inventory", () => {
 				v.size6,
 				v.neutral,
 				v.good,
+				0,
 				5,
 			]),
 		).toBeNull();
-		// Same slot again increments the line rather than adding one.
+		// 0 for the bin means the first active one, which init seeds as Shelves.
+		// The same slot and bin again increments the line rather than adding one.
 		expect(
 			call(DATABASE, "add_bag_line", [
 				bagId,
@@ -129,6 +131,7 @@ describe("inventory", () => {
 				v.size6,
 				v.neutral,
 				v.good,
+				0,
 				3,
 			]),
 		).toBeNull();
@@ -158,6 +161,7 @@ describe("inventory", () => {
 				v.size6,
 				v.neutral,
 				v.good,
+				0,
 				1,
 			]),
 		).toContain("closed");
@@ -169,17 +173,19 @@ describe("inventory", () => {
 			DATABASE,
 			"SELECT slot_id FROM shelves",
 		) as [[number]];
-		expect(call(DATABASE, "hand_out", [slotId, 3, ""])).toBeNull();
+		expect(call(DATABASE, "hand_out", [slotId, 0, 3, ""])).toBeNull();
 		expect(levels().get(slotId)).toBe(5);
-		expect(call(DATABASE, "hand_out", [slotId, 9, ""])).toContain(
-			"only 5 on hand",
+		expect(call(DATABASE, "hand_out", [slotId, 0, 9, ""])).toContain(
+			"only 5 of those in that bin",
 		);
-		expect(call(DATABASE, "correct_count", [slotId, 4, ""])).toContain(
+		expect(call(DATABASE, "correct_count", [slotId, 0, 4, ""])).toContain(
 			"reason",
 		);
-		expect(call(DATABASE, "correct_count", [slotId, 4, "recount"])).toBeNull();
+		expect(
+			call(DATABASE, "correct_count", [slotId, 0, 4, "recount"]),
+		).toBeNull();
 		expect(levels().get(slotId)).toBe(4);
-		expect(call(DATABASE, "correct_count", [slotId, 4, "again"])).toContain(
+		expect(call(DATABASE, "correct_count", [slotId, 0, 4, "again"])).toContain(
 			"already",
 		);
 		const kinds = sql<[string, number]>(
@@ -215,6 +221,7 @@ describe("inventory", () => {
 				v.size6,
 				v.neutral,
 				v.good,
+				0,
 				1,
 			]),
 		).toContain("scale");
@@ -225,6 +232,7 @@ describe("inventory", () => {
 				v.size6,
 				v.neutral,
 				v.good,
+				0,
 				0,
 			]),
 		).toContain("at least 1");
@@ -259,5 +267,90 @@ describe("inventory", () => {
 		expect(
 			call(DATABASE, "add_size", [v.clothing, "X"], { anonymous: true }),
 		).toContain("not authorized");
+	});
+
+	it("counts live in a bin, and a bin holding stock cannot be retired", () => {
+		const v = vocab();
+		const bins = sql<[number, string]>(
+			DATABASE,
+			"SELECT location_id, label FROM location_options",
+		);
+		const shelves = idOf(bins, "Shelves");
+		const door = idOf(bins, "Door");
+
+		// The same slot in a second bin: one slot, two bin rows.
+		expect(call(DATABASE, "open_bag", ["donated", ""])).toBeNull();
+		const bagId =
+			sql<[number, string]>(
+				DATABASE,
+				"SELECT bag_id, status FROM bag_list",
+			).find((b) => b[1] === "open")?.[0] ?? 0;
+		expect(
+			call(DATABASE, "add_bag_line", [
+				bagId,
+				v.socks,
+				v.size6,
+				v.neutral,
+				v.good,
+				door,
+				4,
+			]),
+		).toBeNull();
+		expect(call(DATABASE, "close_bag", [bagId])).toBeNull();
+
+		const byBin = sql<[number, string, number]>(
+			DATABASE,
+			"SELECT slot_id, location_label, on_hand FROM bin_levels",
+		);
+		const socksSlot = byBin.find((r) => r[1] === "Door")?.[0] ?? 0;
+		expect(
+			byBin
+				.filter((r) => r[0] === socksSlot)
+				.map((r) => [r[1], r[2]])
+				.sort(),
+		).toEqual([
+			["Door", 4],
+			["Shelves", 4],
+		]);
+
+		// The slot's total is the sum of its bins, and the client is told how
+		// many bins hold it, which is what decides whether handing out asks.
+		const shelf = sql<[number, number, number]>(
+			DATABASE,
+			"SELECT slot_id, on_hand, bin_count FROM shelves",
+		).find((r) => r[0] === socksSlot);
+		expect(shelf?.[1]).toBe(8);
+		expect(shelf?.[2]).toBe(2);
+
+		// Handing out is per bin: the Door only has four.
+		expect(call(DATABASE, "hand_out", [socksSlot, door, 5, ""])).toContain(
+			"only 4 of those in that bin",
+		);
+		expect(call(DATABASE, "hand_out", [socksSlot, door, 4, ""])).toBeNull();
+
+		// Retiring a bin that still holds something is refused; an empty one is fine.
+		expect(
+			call(DATABASE, "update_location", [shelves, "Shelves", 10, false]),
+		).toContain("still holds");
+		expect(
+			call(DATABASE, "update_location", [door, "Door", 20, false]),
+		).toBeNull();
+		expect(
+			call(DATABASE, "update_location", [door, "Door", 20, true]),
+		).toBeNull();
+	});
+
+	it("every slot's bins sum to its total", () => {
+		const totals = new Map(
+			sql<[number, number]>(DATABASE, "SELECT slot_id, on_hand FROM shelves"),
+		);
+		const perBin = new Map<number, number>();
+		for (const [slot, n] of sql<[number, number]>(
+			DATABASE,
+			"SELECT slot_id, on_hand FROM bin_levels",
+		))
+			perBin.set(slot, (perBin.get(slot) ?? 0) + n);
+		for (const [slot, total] of totals)
+			if (total > 0) expect(perBin.get(slot) ?? 0, `slot ${slot}`).toBe(total);
 	});
 });

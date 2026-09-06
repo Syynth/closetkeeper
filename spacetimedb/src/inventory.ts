@@ -99,15 +99,48 @@ function findOrCreateSlot(
 	return slot.id;
 }
 
-function onHand(ctx: ReadCtx, slotId: bigint): number {
-	return ctx.db.stock_level.slot_id.find(slotId)?.on_hand ?? 0;
+/** The key of one slot's count in one bin. */
+function binKey(slotId: bigint, locationId: bigint): string {
+	return `${slotId}:${locationId}`;
 }
 
-/** The only writer of the ledger and the level cache. */
+function onHandIn(ctx: ReadCtx, slotId: bigint, locationId: bigint): number {
+	return (
+		ctx.db.stock_bin_level.key.find(binKey(slotId, locationId))?.on_hand ?? 0
+	);
+}
+
+/**
+ * The bin a count goes to when nobody said: the first active location by
+ * sort order, which init seeds as "Shelves". Refuses if every bin is
+ * retired, because a count has to be somewhere.
+ */
+function requireLocation(ctx: Ctx, locationId: bigint): bigint {
+	if (locationId !== 0n) {
+		const chosen = ctx.db.location.id.find(locationId);
+		if (chosen === null || !chosen.active) throw new SenderError("no such bin");
+		return chosen.id;
+	}
+	let fallback: { id: bigint; sort_order: number } | null = null;
+	for (const l of ctx.db.location.iter()) {
+		if (!l.active) continue;
+		if (fallback === null || l.sort_order < fallback.sort_order) fallback = l;
+	}
+	if (fallback === null)
+		throw new SenderError("there are no bins to put this in");
+	return fallback.id;
+}
+
+/**
+ * The only writer of the ledger and the two level caches. Both are derived
+ * from the same movement in the same transaction, so they cannot drift from
+ * each other or from the ledger.
+ */
 function applyMovement(
 	ctx: Ctx,
 	staffId: bigint,
 	slotId: bigint,
+	locationId: bigint,
 	delta: number,
 	kind: MovementKind,
 	extra: { bag_line_id?: bigint; item_id?: bigint; note?: string } = {},
@@ -116,6 +149,7 @@ function applyMovement(
 	ctx.db.stock_movement.insert({
 		id: 0n,
 		slot_id: slotId,
+		location_id: locationId,
 		delta,
 		kind,
 		at: ctx.timestamp,
@@ -131,6 +165,21 @@ function applyMovement(
 		ctx.db.stock_level.slot_id.update({
 			...level,
 			on_hand: level.on_hand + delta,
+		});
+	}
+	const key = binKey(slotId, locationId);
+	const binLevel = ctx.db.stock_bin_level.key.find(key);
+	if (binLevel === null) {
+		ctx.db.stock_bin_level.insert({
+			key,
+			slot_id: slotId,
+			location_id: locationId,
+			on_hand: delta,
+		});
+	} else {
+		ctx.db.stock_bin_level.key.update({
+			...binLevel,
+			on_hand: binLevel.on_hand + delta,
 		});
 	}
 }
@@ -298,6 +347,11 @@ const ShelfCell = t.row("ShelfCell", {
 	condition_sort: t.u32(),
 	shelved: t.bool(),
 	on_hand: t.i32(),
+	/**
+	 * How many bins hold any of this. One means handing out never has to
+	 * ask where it comes from; the client reads this to decide.
+	 */
+	bin_count: t.u32(),
 });
 
 /** Every slot that has ever been counted, including ones now at zero. */
@@ -310,6 +364,9 @@ export const shelves = spacetimedb.view(
 		for (const level of ctx.db.stock_level.iter()) {
 			const d = describeSlot(ctx, level.slot_id);
 			if (d === null) continue;
+			let bin_count = 0;
+			for (const b of ctx.db.stock_bin_level.slot_id.filter(level.slot_id))
+				if (b.on_hand > 0) bin_count += 1;
 			out.push({
 				slot_id: level.slot_id,
 				category_id: d.category.id,
@@ -326,6 +383,49 @@ export const shelves = spacetimedb.view(
 				condition_sort: d.condition.sort_order,
 				shelved: d.condition.shelved,
 				on_hand: level.on_hand,
+				bin_count,
+			});
+		}
+		return out;
+	},
+);
+
+/** One slot's count in one bin: the bin filter, the chooser, a bin's page. */
+const BinLevel = t.row("BinLevel", {
+	key: t.string().primaryKey(),
+	slot_id: t.u64(),
+	location_id: t.u64(),
+	location_label: t.string(),
+	location_sort: t.u32(),
+	category_label: t.string(),
+	size_label: t.string(),
+	gender_label: t.string(),
+	condition_label: t.string(),
+	on_hand: t.i32(),
+});
+
+export const binLevels = spacetimedb.view(
+	{ name: "bin_levels", public: true },
+	t.array(BinLevel),
+	(ctx) => {
+		if (!canRead(ctx)) return [];
+		const out = [];
+		for (const b of ctx.db.stock_bin_level.iter()) {
+			if (b.on_hand === 0) continue;
+			const d = describeSlot(ctx, b.slot_id);
+			const loc = ctx.db.location.id.find(b.location_id);
+			if (d === null || loc === null) continue;
+			out.push({
+				key: b.key,
+				slot_id: b.slot_id,
+				location_id: b.location_id,
+				location_label: loc.label,
+				location_sort: loc.sort_order,
+				category_label: d.category.label,
+				size_label: d.size.label,
+				gender_label: d.gender.label,
+				condition_label: d.condition.label,
+				on_hand: b.on_hand,
 			});
 		}
 		return out;
@@ -377,6 +477,7 @@ const BagLineEntry = t.row("BagLineEntry", {
 	line_id: t.u64().primaryKey(),
 	bag_id: t.u64(),
 	slot_id: t.u64(),
+	location_label: t.string(),
 	category_label: t.string(),
 	size_label: t.string(),
 	gender_label: t.string(),
@@ -399,6 +500,7 @@ export const bagLines = spacetimedb.view(
 				line_id: line.id,
 				bag_id: line.bag_id,
 				slot_id: line.slot_id,
+				location_label: ctx.db.location.id.find(line.location_id)?.label ?? "",
 				category_label: d.category.label,
 				size_label: d.size.label,
 				gender_label: d.gender.label,
@@ -415,6 +517,7 @@ const LedgerEntry = t.row("LedgerEntry", {
 	movement_id: t.u64().primaryKey(),
 	at: t.timestamp(),
 	slot_id: t.u64(),
+	location_label: t.string(),
 	category_label: t.string(),
 	size_label: t.string(),
 	gender_label: t.string(),
@@ -440,6 +543,7 @@ export const stockLedger = spacetimedb.view(
 				movement_id: m.id,
 				at: m.at,
 				slot_id: m.slot_id,
+				location_label: ctx.db.location.id.find(m.location_id)?.label ?? "",
 				category_label: d.category.label,
 				size_label: d.size.label,
 				gender_label: d.gender.label,
@@ -689,7 +793,16 @@ export const updateLocation = defineAdminReducer(
 	},
 	(ctx, _me, { location_id, label, sort_order, active }) => {
 		const row = ctx.db.location.id.find(location_id);
-		if (row === null) throw new SenderError("no such location");
+		if (row === null) throw new SenderError("no such bin");
+		if (row.active && !active) {
+			let held = 0;
+			for (const b of ctx.db.stock_bin_level.location_id.filter(location_id))
+				held += b.on_hand;
+			if (held > 0)
+				throw new SenderError(
+					`that bin still holds ${held}; move them out first`,
+				);
+		}
 		ctx.db.location.id.update({
 			...row,
 			label: requireLabel(label),
@@ -729,7 +842,7 @@ export const openBag = defineAdminReducer(
 	},
 );
 
-/** Adds a line, or increments the bag's existing line for the same slot. */
+/** Adds a line, or increments the bag's existing line for the same slot and bin. */
 export const addBagLine = defineAdminReducer(
 	{
 		name: "add_bag_line",
@@ -740,13 +853,23 @@ export const addBagLine = defineAdminReducer(
 			size_id: t.u64(),
 			gender_id: t.u64(),
 			condition_id: t.u64(),
+			/** Where the line is headed. 0 means the first active bin. */
+			location_id: t.u64(),
 			count: t.u32(),
 		},
 	},
 	(
 		ctx,
 		me,
-		{ bag_id, category_id, size_id, gender_id, condition_id, count },
+		{
+			bag_id,
+			category_id,
+			size_id,
+			gender_id,
+			condition_id,
+			location_id,
+			count,
+		},
 	) => {
 		if (count === 0) throw new SenderError("count must be at least 1");
 		requireOpenBag(ctx, bag_id);
@@ -757,21 +880,31 @@ export const addBagLine = defineAdminReducer(
 			gender_id,
 			condition_id,
 		);
+		const bin = requireLocation(ctx, location_id);
 		for (const line of ctx.db.bag_line.bag_id.filter(bag_id)) {
-			if (line.slot_id === slot_id) {
+			if (line.slot_id === slot_id && line.location_id === bin) {
 				ctx.db.bag_line.id.update({ ...line, count: line.count + count });
-				return { table: "bag_line", id: line.id, details: { slot_id } };
+				return {
+					table: "bag_line",
+					id: line.id,
+					details: { slot_id, location_id: bin },
+				};
 			}
 		}
 		const line = ctx.db.bag_line.insert({
 			id: 0n,
 			bag_id,
 			slot_id,
+			location_id: bin,
 			count,
 			created_at: ctx.timestamp,
 			created_by: me.staffId,
 		});
-		return { table: "bag_line", id: line.id, details: { slot_id } };
+		return {
+			table: "bag_line",
+			id: line.id,
+			details: { slot_id, location_id: bin },
+		};
 	},
 );
 
@@ -802,9 +935,15 @@ export const closeBag = defineAdminReducer(
 		const kind = intakeKindFor(bag.kind as BagKind);
 		let lines = 0;
 		for (const line of ctx.db.bag_line.bag_id.filter(bag_id)) {
-			applyMovement(ctx, me.staffId, line.slot_id, line.count, kind, {
-				bag_line_id: line.id,
-			});
+			applyMovement(
+				ctx,
+				me.staffId,
+				line.slot_id,
+				line.location_id,
+				line.count,
+				kind,
+				{ bag_line_id: line.id },
+			);
 			lines += 1;
 		}
 		ctx.db.bag.id.update({
@@ -817,45 +956,68 @@ export const closeBag = defineAdminReducer(
 	},
 );
 
-/** Refuses to take more than is on hand: correct the count first. */
+/** Out of one bin. Refuses to take more than that bin holds. */
 export const handOut = defineAdminReducer(
 	{
 		name: "hand_out",
 		capability: "inventory.write",
-		args: { slot_id: t.u64(), count: t.u32(), note: t.string() },
+		args: {
+			slot_id: t.u64(),
+			/** Which bin it comes out of. 0 means the first active bin. */
+			location_id: t.u64(),
+			count: t.u32(),
+			note: t.string(),
+		},
 		redact: ["note"],
 	},
-	(ctx, me, { slot_id, count, note }) => {
+	(ctx, me, { slot_id, location_id, count, note }) => {
 		if (count === 0) throw new SenderError("count must be at least 1");
 		if (ctx.db.slot.id.find(slot_id) === null)
 			throw new SenderError("no such slot");
-		const have = onHand(ctx, slot_id);
-		if (count > have) throw new SenderError(`only ${have} on hand`);
-		applyMovement(ctx, me.staffId, slot_id, -count, "handed_out", {
+		const bin = requireLocation(ctx, location_id);
+		const have = onHandIn(ctx, slot_id, bin);
+		if (count > have)
+			throw new SenderError(`only ${have} of those in that bin`);
+		applyMovement(ctx, me.staffId, slot_id, bin, -count, "handed_out", {
 			note: note.trim(),
 		});
-		return { table: "slot", id: slot_id, details: { delta: -count } };
+		return {
+			table: "slot",
+			id: slot_id,
+			details: { delta: -count, location_id: bin },
+		};
 	},
 );
 
-/** A physical recount. The note says why; it is required. */
+/** Sets one bin's count after a physical recount. The reason is required. */
 export const correctCount = defineAdminReducer(
 	{
 		name: "correct_count",
 		capability: "inventory.write",
-		args: { slot_id: t.u64(), on_hand: t.u32(), note: t.string() },
+		args: {
+			slot_id: t.u64(),
+			/** Which bin was counted. 0 means the first active bin. */
+			location_id: t.u64(),
+			on_hand: t.u32(),
+			note: t.string(),
+		},
 		redact: ["note"],
 	},
-	(ctx, me, { slot_id, on_hand, note }) => {
+	(ctx, me, { slot_id, location_id, on_hand, note }) => {
 		if (ctx.db.slot.id.find(slot_id) === null)
 			throw new SenderError("no such slot");
 		const reason = note.trim();
 		if (reason.length === 0) throw new SenderError("a reason is required");
-		const delta = on_hand - onHand(ctx, slot_id);
+		const bin = requireLocation(ctx, location_id);
+		const delta = on_hand - onHandIn(ctx, slot_id, bin);
 		if (delta === 0) throw new SenderError("already that count");
-		applyMovement(ctx, me.staffId, slot_id, delta, "correction", {
+		applyMovement(ctx, me.staffId, slot_id, bin, delta, "correction", {
 			note: reason,
 		});
-		return { table: "slot", id: slot_id, details: { delta } };
+		return {
+			table: "slot",
+			id: slot_id,
+			details: { delta, location_id: bin },
+		};
 	},
 );
