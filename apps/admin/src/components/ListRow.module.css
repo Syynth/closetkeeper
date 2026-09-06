@@ -24,6 +24,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.15rem;
+	flex: 1;
 	min-width: 0;
 }
 
@@ -35,7 +36,10 @@
 .detail {
 	font-size: 0.9rem;
 	color: var(--mantine-color-bark-6);
-	overflow-wrap: anywhere;
+	/* One line; a long email is recognisable from its start. */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .right {
