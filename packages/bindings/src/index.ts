@@ -70,6 +70,7 @@ import UpdateSizeReducer from "./update_size_reducer";
 import AccessLogRow from "./access_log_table";
 import BagLinesRow from "./bag_lines_table";
 import BagListRow from "./bag_list_table";
+import BinLevelsRow from "./bin_levels_table";
 import CategoryOptionsRow from "./category_options_table";
 import ConditionOptionsRow from "./condition_options_table";
 import GenderOptionsRow from "./gender_options_table";
@@ -111,6 +112,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, BagListRow),
+  binLevels: __table({
+    name: 'bin_levels',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, BinLevelsRow),
   categoryOptions: __table({
     name: 'category_options',
     indexes: [

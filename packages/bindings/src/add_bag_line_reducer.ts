@@ -16,5 +16,6 @@ export default {
   sizeId: __t.u64(),
   genderId: __t.u64(),
   conditionId: __t.u64(),
+  locationId: __t.u64(),
   count: __t.u32(),
 };

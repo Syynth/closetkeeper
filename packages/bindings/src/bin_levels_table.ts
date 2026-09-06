@@ -11,20 +11,14 @@ import {
 } from "spacetimedb";
 
 export default __t.row({
-  slotId: __t.u64().primaryKey().name("slot_id"),
-  categoryId: __t.u64().name("category_id"),
-  sizeId: __t.u64().name("size_id"),
-  genderId: __t.u64().name("gender_id"),
-  conditionId: __t.u64().name("condition_id"),
+  key: __t.string().primaryKey(),
+  slotId: __t.u64().name("slot_id"),
+  locationId: __t.u64().name("location_id"),
+  locationLabel: __t.string().name("location_label"),
+  locationSort: __t.u32().name("location_sort"),
   categoryLabel: __t.string().name("category_label"),
   sizeLabel: __t.string().name("size_label"),
   genderLabel: __t.string().name("gender_label"),
   conditionLabel: __t.string().name("condition_label"),
-  categorySort: __t.u32().name("category_sort"),
-  sizeSort: __t.u32().name("size_sort"),
-  genderSort: __t.u32().name("gender_sort"),
-  conditionSort: __t.u32().name("condition_sort"),
-  shelved: __t.bool(),
   onHand: __t.i32().name("on_hand"),
-  binCount: __t.u32().name("bin_count"),
 });

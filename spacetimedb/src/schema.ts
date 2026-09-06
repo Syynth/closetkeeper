@@ -264,11 +264,27 @@ const slot = table(
 	},
 );
 
-/** The cache the shelves read. Written only by the movement helper; a test asserts it equals the ledger. */
+/** The slot's total. Written only by the movement helper; a test asserts it equals the ledger. */
 const stock_level = table(
 	{ name: "stock_level" },
 	{
 		slot_id: t.u64().primaryKey(),
+		on_hand: t.i32(),
+	},
+);
+
+/**
+ * The same count broken down by where it physically is. Location is a
+ * breakdown *inside* a slot, never a fifth dimension of the slot itself, so
+ * the slot stays the reporting spine and a bin that is renamed or retired
+ * never splits a category's history. `key` is `slot_id:location_id`.
+ */
+const stock_bin_level = table(
+	{ name: "stock_bin_level" },
+	{
+		key: t.string().primaryKey(),
+		slot_id: t.u64().index(),
+		location_id: t.u64().index(),
 		on_hand: t.i32(),
 	},
 );
@@ -283,6 +299,8 @@ const stock_movement = table(
 	{
 		id: t.u64().primaryKey().autoInc(),
 		slot_id: t.u64().index(),
+		/** Which bin it came out of or went into. Appended with a default. */
+		location_id: t.u64().default(0n),
 		delta: t.i32(),
 		kind: t.string().index(),
 		at: t.timestamp(),
@@ -321,6 +339,8 @@ const bag_line = table(
 		id: t.u64().primaryKey().autoInc(),
 		bag_id: t.u64().index(),
 		slot_id: t.u64().index(),
+		/** Where this line is headed. Appended with a default. */
+		location_id: t.u64().default(0n),
 		count: t.u32(),
 		created_at: t.timestamp(),
 		created_by: t.u64(),
@@ -344,6 +364,7 @@ const spacetimedb = schema({
 	location,
 	slot,
 	stock_level,
+	stock_bin_level,
 	stock_movement,
 	bag,
 	bag_line,

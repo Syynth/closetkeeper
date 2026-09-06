@@ -90,6 +90,7 @@ export const BagLine = __t.object("BagLine", {
   id: __t.u64(),
   bagId: __t.u64(),
   slotId: __t.u64(),
+  locationId: __t.u64(),
   count: __t.u32(),
   createdAt: __t.timestamp(),
   createdBy: __t.u64(),
@@ -100,6 +101,7 @@ export const BagLineEntry = __t.object("BagLineEntry", {
   lineId: __t.u64(),
   bagId: __t.u64(),
   slotId: __t.u64(),
+  locationLabel: __t.string(),
   categoryLabel: __t.string(),
   sizeLabel: __t.string(),
   genderLabel: __t.string(),
@@ -127,6 +129,23 @@ export const BagSummary = __t.object("BagSummary", {
   note: __t.string(),
 });
 export type BagSummary = __Infer<typeof BagSummary>;
+
+export const BinLevel = __t.object("BinLevel", {
+  key: __t.string(),
+  slotId: __t.u64(),
+  locationId: __t.u64(),
+  locationLabel: __t.string(),
+  locationSort: __t.u32(),
+  categoryLabel: __t.string(),
+  sizeLabel: __t.string(),
+  genderLabel: __t.string(),
+  conditionLabel: __t.string(),
+  onHand: __t.i32(),
+});
+export type BinLevel = __Infer<typeof BinLevel>;
+
+export const BinLevels = __t.object("BinLevels", {});
+export type BinLevels = __Infer<typeof BinLevels>;
 
 export const Category = __t.object("Category", {
   id: __t.u64(),
@@ -193,6 +212,7 @@ export const LedgerEntry = __t.object("LedgerEntry", {
   movementId: __t.u64(),
   at: __t.timestamp(),
   slotId: __t.u64(),
+  locationLabel: __t.string(),
   categoryLabel: __t.string(),
   sizeLabel: __t.string(),
   genderLabel: __t.string(),
@@ -333,6 +353,7 @@ export const ShelfCell = __t.object("ShelfCell", {
   conditionSort: __t.u32(),
   shelved: __t.bool(),
   onHand: __t.i32(),
+  binCount: __t.u32(),
 });
 export type ShelfCell = __Infer<typeof ShelfCell>;
 
@@ -421,6 +442,14 @@ export const StaffStanding = __t.object("StaffStanding", {
 });
 export type StaffStanding = __Infer<typeof StaffStanding>;
 
+export const StockBinLevel = __t.object("StockBinLevel", {
+  key: __t.string(),
+  slotId: __t.u64(),
+  locationId: __t.u64(),
+  onHand: __t.i32(),
+});
+export type StockBinLevel = __Infer<typeof StockBinLevel>;
+
 export const StockLedger = __t.object("StockLedger", {});
 export type StockLedger = __Infer<typeof StockLedger>;
 
@@ -433,6 +462,7 @@ export type StockLevel = __Infer<typeof StockLevel>;
 export const StockMovement = __t.object("StockMovement", {
   id: __t.u64(),
   slotId: __t.u64(),
+  locationId: __t.u64(),
   delta: __t.i32(),
   kind: __t.string(),
   at: __t.timestamp(),

@@ -14,6 +14,7 @@ export default __t.row({
   lineId: __t.u64().primaryKey().name("line_id"),
   bagId: __t.u64().name("bag_id"),
   slotId: __t.u64().name("slot_id"),
+  locationLabel: __t.string().name("location_label"),
   categoryLabel: __t.string().name("category_label"),
   sizeLabel: __t.string().name("size_label"),
   genderLabel: __t.string().name("gender_label"),
