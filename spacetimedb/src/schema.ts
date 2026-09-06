@@ -165,6 +165,168 @@ const access_event_purge_schedule = table(
 	},
 );
 
+// ---------------------------------------------------------------------------
+// Inventory. See docs/design/inventory.md. Vocabularies are rows; the spine
+// is `slot`; counts are a ledger plus a per-slot cache; intake is a bag.
+// None of these tables hold family data, but they stay private like the
+// rest and are read through views.
+// ---------------------------------------------------------------------------
+
+/** A sizing system: clothing, shoes, diapers. Rarely edited; `key` never changes. */
+const scale = table(
+	{ name: "scale" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		key: t.string().unique(),
+		label: t.string(),
+	},
+);
+
+/** One size on one scale. Closed vocabulary: intake never accepts free text. */
+const size = table(
+	{ name: "size" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		scale_id: t.u64().index(),
+		label: t.string(),
+		sort_order: t.u32(),
+		active: t.bool(),
+	},
+);
+
+/** A kind of garment. Each category uses exactly one size scale. */
+const category = table(
+	{ name: "category" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		label: t.string(),
+		scale_id: t.u64().index(),
+		sort_order: t.u32(),
+		active: t.bool(),
+	},
+);
+
+/** Boys, girls, neutral. A vocabulary because requests and shelves both use it. */
+const gender = table(
+	{ name: "gender" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		label: t.string(),
+		sort_order: t.u32(),
+		active: t.bool(),
+	},
+);
+
+/**
+ * New, good, worn. `shelved: false` conditions are counted at intake for
+ * reporting but never appear on the shelves: they went to recycling.
+ */
+const condition = table(
+	{ name: "condition" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		label: t.string(),
+		sort_order: t.u32(),
+		active: t.bool(),
+		shelved: t.bool(),
+	},
+);
+
+/**
+ * Where labeled items are: shelves, a bin, the door. `label_code` is the
+ * code a sticker on the bin carries; empty until labels exist (step 2).
+ */
+const location = table(
+	{ name: "location" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		label: t.string(),
+		label_code: t.string(),
+		sort_order: t.u32(),
+		active: t.bool(),
+	},
+);
+
+/**
+ * The spine: one row per distinct category × size × gender × condition
+ * that has ever been counted. Created lazily, never pre-generated. `key`
+ * is the four ids joined (inventory-rules.ts, slotKey) and is unique.
+ */
+const slot = table(
+	{ name: "slot" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		key: t.string().unique(),
+		category_id: t.u64().index(),
+		size_id: t.u64(),
+		gender_id: t.u64(),
+		condition_id: t.u64(),
+	},
+);
+
+/** The cache the shelves read. Written only by the movement helper; a test asserts it equals the ledger. */
+const stock_level = table(
+	{ name: "stock_level" },
+	{
+		slot_id: t.u64().primaryKey(),
+		on_hand: t.i32(),
+	},
+);
+
+/**
+ * Append-only ledger of every change to a count. `kind` is one of
+ * MOVEMENT_KINDS. `bag_line_id` and `item_id` are 0 when not applicable.
+ * Grant reporting is a query over this table.
+ */
+const stock_movement = table(
+	{ name: "stock_movement" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		slot_id: t.u64().index(),
+		delta: t.i32(),
+		kind: t.string().index(),
+		at: t.timestamp(),
+		staff_id: t.u64(),
+		bag_line_id: t.u64(),
+		item_id: t.u64(),
+		/** Free text; may name a donor, so it is redacted from audit details. */
+		note: t.string(),
+	},
+);
+
+/**
+ * One intake session: a donation or a purchase. Lines are added while it is
+ * open; closing writes the movements and locks it. `donor_person_id` is 0
+ * until donors are modeled; it is here so the receipt has somewhere to hang.
+ */
+const bag = table(
+	{ name: "bag" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		kind: t.string(),
+		status: t.string().index(),
+		opened_at: t.timestamp(),
+		opened_by: t.u64(),
+		closed_at: t.timestamp(),
+		closed_by: t.u64(),
+		donor_person_id: t.u64(),
+		note: t.string(),
+	},
+);
+
+/** One count of one slot in one bag. */
+const bag_line = table(
+	{ name: "bag_line" },
+	{
+		id: t.u64().primaryKey().autoInc(),
+		bag_id: t.u64().index(),
+		slot_id: t.u64().index(),
+		count: t.u32(),
+		created_at: t.timestamp(),
+		created_by: t.u64(),
+	},
+);
+
 const spacetimedb = schema({
 	person,
 	auth_provider_link,
@@ -174,6 +336,17 @@ const spacetimedb = schema({
 	audit_event,
 	access_event,
 	access_event_purge_schedule,
+	scale,
+	size,
+	category,
+	gender,
+	condition,
+	location,
+	slot,
+	stock_level,
+	stock_movement,
+	bag,
+	bag_line,
 });
 
 export default spacetimedb;

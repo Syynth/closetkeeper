@@ -34,30 +34,57 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AddBagLineReducer from "./add_bag_line_reducer";
+import AddCategoryReducer from "./add_category_reducer";
+import AddConditionReducer from "./add_condition_reducer";
+import AddGenderReducer from "./add_gender_reducer";
+import AddLocationReducer from "./add_location_reducer";
+import AddSizeReducer from "./add_size_reducer";
+import CloseBagReducer from "./close_bag_reducer";
+import CorrectCountReducer from "./correct_count_reducer";
 import CreateRoleReducer from "./create_role_reducer";
 import DeleteRoleReducer from "./delete_role_reducer";
 import FinishWelcomeReducer from "./finish_welcome_reducer";
 import GrantCapabilityReducer from "./grant_capability_reducer";
+import HandOutReducer from "./hand_out_reducer";
 import InviteStaffReducer from "./invite_staff_reducer";
+import OpenBagReducer from "./open_bag_reducer";
+import RemoveBagLineReducer from "./remove_bag_line_reducer";
 import RemoveMyLoginReducer from "./remove_my_login_reducer";
 import RevokeCapabilityReducer from "./revoke_capability_reducer";
+import SeedInventoryReducer from "./seed_inventory_reducer";
 import SetStaffActiveReducer from "./set_staff_active_reducer";
 import SetStaffPersonReducer from "./set_staff_person_reducer";
 import SetStaffRoleReducer from "./set_staff_role_reducer";
+import UpdateCategoryReducer from "./update_category_reducer";
+import UpdateConditionReducer from "./update_condition_reducer";
+import UpdateGenderReducer from "./update_gender_reducer";
+import UpdateLocationReducer from "./update_location_reducer";
 import UpdateMyNameReducer from "./update_my_name_reducer";
 import UpdateRoleReducer from "./update_role_reducer";
+import UpdateSizeReducer from "./update_size_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
 import AccessLogRow from "./access_log_table";
+import BagLinesRow from "./bag_lines_table";
+import BagListRow from "./bag_list_table";
+import CategoryOptionsRow from "./category_options_table";
+import ConditionOptionsRow from "./condition_options_table";
+import GenderOptionsRow from "./gender_options_table";
+import LocationOptionsRow from "./location_options_table";
 import MyAccountRow from "./my_account_table";
 import MyLoginsRow from "./my_logins_table";
 import MyRecentSignInsRow from "./my_recent_sign_ins_table";
 import MyStaffRow from "./my_staff_table";
 import RoleCapabilityMatrixRow from "./role_capability_matrix_table";
 import RoleOptionsRow from "./role_options_table";
+import ScaleOptionsRow from "./scale_options_table";
+import ShelvesRow from "./shelves_table";
+import SizeOptionsRow from "./size_options_table";
 import StaffDirectoryRow from "./staff_directory_table";
+import StockLedgerRow from "./stock_ledger_table";
 
 /** Type-only namespace exports for generated type groups. */
 
@@ -70,6 +97,48 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, AccessLogRow),
+  bagLines: __table({
+    name: 'bag_lines',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, BagLinesRow),
+  bagList: __table({
+    name: 'bag_list',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, BagListRow),
+  categoryOptions: __table({
+    name: 'category_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, CategoryOptionsRow),
+  conditionOptions: __table({
+    name: 'condition_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, ConditionOptionsRow),
+  genderOptions: __table({
+    name: 'gender_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, GenderOptionsRow),
+  locationOptions: __table({
+    name: 'location_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, LocationOptionsRow),
   myAccount: __table({
     name: 'my_account',
     indexes: [
@@ -112,6 +181,27 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, RoleOptionsRow),
+  scaleOptions: __table({
+    name: 'scale_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, ScaleOptionsRow),
+  shelves: __table({
+    name: 'shelves',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, ShelvesRow),
+  sizeOptions: __table({
+    name: 'size_options',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, SizeOptionsRow),
   staffDirectory: __table({
     name: 'staff_directory',
     indexes: [
@@ -119,22 +209,46 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, StaffDirectoryRow),
+  stockLedger: __table({
+    name: 'stock_ledger',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, StockLedgerRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("add_bag_line", AddBagLineReducer),
+  __reducerSchema("add_category", AddCategoryReducer),
+  __reducerSchema("add_condition", AddConditionReducer),
+  __reducerSchema("add_gender", AddGenderReducer),
+  __reducerSchema("add_location", AddLocationReducer),
+  __reducerSchema("add_size", AddSizeReducer),
+  __reducerSchema("close_bag", CloseBagReducer),
+  __reducerSchema("correct_count", CorrectCountReducer),
   __reducerSchema("create_role", CreateRoleReducer),
   __reducerSchema("delete_role", DeleteRoleReducer),
   __reducerSchema("finish_welcome", FinishWelcomeReducer),
   __reducerSchema("grant_capability", GrantCapabilityReducer),
+  __reducerSchema("hand_out", HandOutReducer),
   __reducerSchema("invite_staff", InviteStaffReducer),
+  __reducerSchema("open_bag", OpenBagReducer),
+  __reducerSchema("remove_bag_line", RemoveBagLineReducer),
   __reducerSchema("remove_my_login", RemoveMyLoginReducer),
   __reducerSchema("revoke_capability", RevokeCapabilityReducer),
+  __reducerSchema("seed_inventory", SeedInventoryReducer),
   __reducerSchema("set_staff_active", SetStaffActiveReducer),
   __reducerSchema("set_staff_person", SetStaffPersonReducer),
   __reducerSchema("set_staff_role", SetStaffRoleReducer),
+  __reducerSchema("update_category", UpdateCategoryReducer),
+  __reducerSchema("update_condition", UpdateConditionReducer),
+  __reducerSchema("update_gender", UpdateGenderReducer),
+  __reducerSchema("update_location", UpdateLocationReducer),
   __reducerSchema("update_my_name", UpdateMyNameReducer),
   __reducerSchema("update_role", UpdateRoleReducer),
+  __reducerSchema("update_size", UpdateSizeReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

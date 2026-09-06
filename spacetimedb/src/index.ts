@@ -24,9 +24,11 @@ import {
 	SYSTEM_ROLES,
 } from "./auth-rules";
 import { TRUSTED_ISSUER } from "./config";
+import { seedInventoryRows } from "./inventory-seed";
 import spacetimedb, { ACCESS_EVENT_PURGE_INTERVAL } from "./schema";
 
 export default spacetimedb;
+export * from "./inventory";
 export { purgeAccessEvents } from "./schema";
 
 /** Sentinel for `invited_by` and `actor_staff_id` when the module itself acted. */
@@ -94,6 +96,8 @@ export const init = spacetimedb.init((ctx) => {
 		scheduled_id: 0n,
 		scheduled_at: ACCESS_EVENT_PURGE_INTERVAL,
 	});
+
+	seedInventoryRows(ctx);
 
 	ctx.db.audit_event.insert({
 		id: 0n,

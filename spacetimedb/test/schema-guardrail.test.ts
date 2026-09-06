@@ -33,6 +33,8 @@ const NEVER_PUBLIC = [
 	"request",
 	"appointment",
 	"donation",
+	// Carries donor_person_id once donors are modeled.
+	"bag",
 ];
 
 describe("schema guardrail", () => {

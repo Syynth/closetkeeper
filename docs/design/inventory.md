@@ -22,7 +22,7 @@ the end, each a PR.
 
 | Table | Columns | Notes |
 |---|---|---|
-| `size_scale` | id, key, label | Seeded: `clothing`, `shoes`, `diapers`. Rarely edited. |
+| `scale` | id, key, label | Seeded: `clothing`, `shoes`, `diapers`. Rarely edited. |
 | `size` | id, scale_id, label, sort_order, active | Seeded per scale. Sort order is what makes "2T" come before "3T". |
 | `category` | id, label, scale_id, sort_order, active | Seeded: Tops, Pants, Dresses, Outerwear, Pajamas, Underwear, Socks, Shoes, Diapers. Each category has exactly one size scale, so a category only ever offers the sizes that make sense for it. |
 | `gender` | id, label, sort_order, active | Seeded: Boys, Girls, Neutral. |
@@ -30,7 +30,7 @@ the end, each a PR.
 | `location` | id, label, label_code, sort_order, active | Seeded: Shelves, Door. Where labeled items are; the vocabulary the readers will report against later. `label_code` is generated like an item's, so a sticker on a bin opens that bin. |
 
 Deactivating a row hides it from intake and keeps every count that references
-it. Labels are editable; keys (`size_scale.key`) are not.
+it. Labels are editable; keys (`scale.key`) are not.
 
 ## The spine
 
