@@ -7,8 +7,15 @@ one-on-one appointment rather than storefront.
 
 ## Status
 
-**Phase 1 — internal admin only.** Nothing here is public-facing yet. The
-repository is scaffolding at this point; the module and web app are not built.
+**Phase 1 — internal admin only.** Nothing here is public-facing yet.
+
+Working today: staff sign-in and roles, and the whole inventory loop —
+vocabularies, bins, bags with a five-tap intake, the shelves, handing out,
+fixing counts, an append-only audit log, and CSV export. Requests, families
+and donations are designed but not built.
+
+[`docs/outstanding.md`](docs/outstanding.md) is the honest list of what
+exists, what does not, and what is still an open question.
 
 ## Stack
 
@@ -16,8 +23,10 @@ repository is scaffolding at this point; the module and web app are not built.
 |---|---|
 | Backend | SpacetimeDB module, written in TypeScript |
 | Hosting | SpacetimeDB Maincloud |
-| Auth | SpacetimeDB built-in identity (to start) |
-| Frontend | React Router v7 on Cloudflare Workers |
+| Auth | SpacetimeAuth (OIDC); authorization is an allowlist in the module |
+| Frontend | React and TanStack Router, on Cloudflare Workers static assets |
+| UI | Mantine |
+| Lint, format, test | Biome and Vitest |
 
 ## Requirements
 
@@ -37,7 +46,8 @@ Install the SpacetimeDB CLI from [spacetimedb.com/install](https://spacetimedb.c
 | `apps/admin/` | Staff/volunteer admin SPA. Vite, React, TanStack Router, served from Cloudflare Workers static assets. |
 | `apps/public/` | Reserved for the phase-2 public site. Nothing here yet. |
 | `packages/bindings/` | Client bindings generated from the module by `spacetime generate`. Committed, so schema changes show up in review. |
-| `docs/` | Decision log and vendored SpacetimeDB reference material. |
+| `docs/` | [What is outstanding](docs/outstanding.md), the [decision log](docs/decision-log.md), design docs, and vendored SpacetimeDB reference material. |
+| `scripts/` | Development helpers. [`seed-demo-stock.py`](scripts/seed-demo-stock.py) fills a dev database with a closet's worth of plausible stock. |
 
 ## Getting started
 

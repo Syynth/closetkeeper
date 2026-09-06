@@ -9,6 +9,19 @@ This is a small operation: a garage-scale closet, a handful of staff and
 volunteers, and appointments measured in the dozens per month. Optimize for
 clarity and low maintenance burden, not throughput.
 
+**What is built, what is not, and what is unanswered:**
+[`docs/outstanding.md`](docs/outstanding.md). This file is policy; that one
+is status. Read it before assuming a thing described here exists.
+
+The rest of `docs/`: [`decision-log.md`](docs/decision-log.md) is every
+decision with its reasoning and is the tiebreaker for this file;
+[`design/inventory.md`](docs/design/inventory.md),
+[`design/requests.md`](docs/design/requests.md) and
+[`design/roles-and-audit.md`](docs/design/roles-and-audit.md) are the shapes
+of the three systems; [`design/ui.md`](docs/design/ui.md) is the design
+system; [`spacetimedb-guide.md`](docs/spacetimedb-guide.md) is vendored
+upstream reference, not project policy.
+
 ## Non-negotiable constraints
 
 These exist for legal and safety reasons. Do not relax them without an explicit
@@ -40,8 +53,8 @@ disagree, the more recent one wins and the other gets fixed.
 library. Cloudflare Workers as
 the hosting platform, deployed from GitHub Actions. TypeScript everywhere,
 including the module. React with TanStack Router for the admin SPA, with
-TanStack Start reserved for the public site. SpacetimeAuth (magic link) for
-staff login, with authorization entirely in the module's allowlist. Vitest,
+TanStack Start reserved for the public site. SpacetimeAuth for staff
+login, with authorization entirely in the module's allowlist. Vitest,
 with module tests as integration tests against a local instance rather than
 a mock, plus a schema guardrail. Biome for lint and format. Public repository
 under Apache-2.0, changes via pull request with CI required. Production
@@ -52,7 +65,9 @@ and the data model principles.
 (TanStack Start with selective SSR, `/admin` subtree client-only) or two
 Workers (static-asset admin SPA + a separate SSR/cron Worker). The admin app
 is built standalone under `apps/admin` so either shape remains possible.
-Decide when phase 2 begins, not before.
+Decide when phase 2 begins, not before. The public request form is what
+forces it: it needs a Worker with code and a secret in front of it, which is
+the project's first server-side surface.
 
 **Not settled.** Any specific version number appearing anywhere in this
 document — everything runs latest, see below.
@@ -166,9 +181,10 @@ asks. Gender and condition are vocabularies like the rest.
 log in — they phone, or drop off a bag at a fundraiser.
 
 ```
-person        — the human record; name, contact, notes. No auth required.
-account       — OIDC identity (iss+sub), links to at most one person. Optional.
-staff_member  — person_id + role. This is the authorization allowlist.
+person             — the human record; name, contact, notes. No auth required.
+auth_provider_link — one way to sign in: an OIDC identity (iss+sub) pointing
+                     at a person. A person may have several, or none.
+staff_member       — person_id + role. This is the authorization allowlist.
 ```
 
 Requests, donations, and appointments hang off `person_id`, never off an
@@ -192,10 +208,13 @@ SpacetimeDB modules are exposed to the open internet and anyone can connect. A
 client with no token gets a fresh anonymous identity. Authentication gives you a
 stable identity and **no authorization whatsoever**.
 
-- **Provider: SpacetimeAuth (`https://auth.spacetimedb.com/oidc`), magic
-  link only to start.** More providers (Google, etc.) can be enabled in the
-  SpacetimeAuth project later without a schema change: each provider login
-  is one more `auth_provider_link` row for the same person.
+- **Provider: SpacetimeAuth (`https://auth.spacetimedb.com/oidc`).** Magic
+  link and Google are both enabled. Adding a provider is a toggle in the
+  SpacetimeAuth project, never a schema change: each way of signing in is
+  one more `auth_provider_link` row for the same person.
+- **Magic-link email delivery is currently unreliable** (see
+  `docs/outstanding.md`). Google is what works. Say so when inviting
+  somebody rather than letting them wait for an email.
 - **Anyone can obtain a valid SpacetimeDB identity.** Authentication proves
   only that a caller is *someone*, not that they are *ours*. The
   `staff_member` allowlist carries the entire authorization burden. Treat a
@@ -217,23 +236,29 @@ stable identity and **no authorization whatsoever**.
   repository secret, so another deployer seeds their own person without
   touching code. `init` runs once per database; a database created before
   the seed existed must be recreated.
-- **Roles are code, not rows.** Their meaning is enforced by code paths, so
-  a table would only add a place for the two to drift.
+- **Capabilities are code; roles are rows.** A capability is meaningless
+  unless some reducer checks it, so the set lives in
+  `spacetimedb/src/auth-rules.ts`. Which capabilities a role bundles is a
+  table the org can reshape without a republish. See Roles below.
 
 ### Roles
 
 Roles are rows (`role`, `role_capability`), seeded by `init` and adjustable
-by a super-admin without a republish. Capabilities are code
+by a system administrator without a republish. Capabilities are code
 (`spacetimedb/src/auth-rules.ts`). Seeded roles:
 
-| Role        | Inventory | Donations | Families | Financial | Staff mgmt |
-|-------------|-----------|-----------|----------|-----------|------------|
-| system_admin | yes      | yes       | yes      | yes       | yes, incl. protected |
-| president   | yes       | yes       | yes      | no        | yes        |
-| staff       | yes       | yes       | yes      | no        | yes        |
-| secretary   | yes       | yes       | yes      | no        | yes        |
-| treasurer   | yes       | yes       | yes      | read      | no         |
-| volunteer   | yes       | yes       | **no**   | no        | no         |
+| Role        | Inventory | Edit the vocabularies | Donations | Families | Financial | Staff mgmt |
+|-------------|-----------|-----------------------|-----------|----------|-----------|------------|
+| system_admin | yes      | yes                   | yes       | yes      | yes       | yes, incl. protected |
+| president   | yes       | yes                   | yes       | yes      | no        | yes        |
+| staff       | yes       | yes                   | yes       | yes      | no        | yes        |
+| secretary   | yes       | yes                   | yes       | yes      | no        | yes        |
+| treasurer   | yes       | no                    | yes       | yes      | read      | no         |
+| volunteer   | yes       | **no**                | yes       | **no**   | no        | no         |
+
+"Inventory" is logging and adjusting counts, which volunteers do. "Edit the
+vocabularies" (`inventory.manage`) is reshaping categories, sizes,
+conditions and bins, which changes what everyone else can record.
 
 Family data and role management are **protected capabilities**: only a
 holder of `staff.manage_sensitive` (the system administrator) can grant them
@@ -257,11 +282,14 @@ Suppression logic belongs in the cron job or a reducer — never in the template
 
 ## Operational requirements
 
-- **Export reducer, maintained from day one.** CSV export of inventory,
-  donations, and requests. `pg_dump` will not work: SpacetimeDB's PGWire support
-  omits Postgres-compatible system catalogs, and only protocol 3.0 simple query
-  mode without parameterized queries is supported. Per-table `\copy` or an
-  export reducer is the path.
+- **CSV export, maintained from day one.** Built in the browser from the
+  rows the client already has subscribed, not by a reducer: a reducer cannot
+  return data, so an export reducer would have to write rows into a table
+  and have the client read them back to say the same thing. `pg_dump` will
+  not work either: SpacetimeDB's PGWire support omits Postgres-compatible
+  system catalogs, and only protocol 3.0 simple query mode without
+  parameterized queries is supported. If the client ever outgrows holding
+  everything it exports, per-table `\copy` is the fallback.
 - **Backups off the host, tested by actually restoring once.**
 - **Never expose the PGWire port beyond localhost on self-hosted deployments.**
   SSL is only supported on SpacetimeDB Cloud; Standalone has no TLS on that
@@ -318,8 +346,10 @@ Suppression logic belongs in the cron job or a reducer — never in the template
   test it without a host. See `spacetimedb/src/auth-rules.ts`.
 - Reducers give an audit trail nearly for free — preserve it; it becomes the
   impact reporting for grant applications.
-- Mobile-first intake UI. The primary use is standing in a garage holding a bag
-  of clothes: large tap targets, category-size-count in three taps, no keyboard.
+- Mobile-first intake UI. The primary use is standing in a garage holding a
+  bag of clothes: large tap targets (48px and up), no keyboard, and a line
+  logged in five taps — category, size, who it is for, condition, how many.
+  The bin is a sixth only when you disagree with the suggestion.
 - Prefer boring and obvious. This will be edited at 10pm eighteen months from
   now with no context loaded.
 
