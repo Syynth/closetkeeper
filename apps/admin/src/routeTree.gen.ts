@@ -13,12 +13,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccessRouteImport } from './routes/access'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as CallbackRouteImport } from './routes/callback'
+import { Route as ConditionsRouteImport } from './routes/conditions'
+import { Route as GendersRouteImport } from './routes/genders'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as BagsIndexRouteImport } from './routes/bags.index'
 import { Route as BagsBagIdRouteImport } from './routes/bags.$bagId'
 import { Route as BinsIndexRouteImport } from './routes/bins.index'
 import { Route as BinsBinIdRouteImport } from './routes/bins.$binId'
+import { Route as CategoriesIndexRouteImport } from './routes/categories.index'
+import { Route as CategoriesCategoryIdRouteImport } from './routes/categories.$categoryId'
 import { Route as RolesIndexRouteImport } from './routes/roles.index'
 import { Route as RolesRoleIdRouteImport } from './routes/roles.$roleId'
 import { Route as ShelvesIndexRouteImport } from './routes/shelves.index'
@@ -44,6 +48,16 @@ const AccountRoute = AccountRouteImport.update({
 const CallbackRoute = CallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConditionsRoute = ConditionsRouteImport.update({
+  id: '/conditions',
+  path: '/conditions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GendersRoute = GendersRouteImport.update({
+  id: '/genders',
+  path: '/genders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MoreRoute = MoreRouteImport.update({
@@ -74,6 +88,16 @@ const BinsIndexRoute = BinsIndexRouteImport.update({
 const BinsBinIdRoute = BinsBinIdRouteImport.update({
   id: '/bins/$binId',
   path: '/bins/$binId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
+  id: '/categories/',
+  path: '/categories/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesCategoryIdRoute = CategoriesCategoryIdRouteImport.update({
+  id: '/categories/$categoryId',
+  path: '/categories/$categoryId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
@@ -112,15 +136,19 @@ export interface FileRoutesByFullPath {
   '/access': typeof AccessRoute
   '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
+  '/conditions': typeof ConditionsRoute
+  '/genders': typeof GendersRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
   '/bags/$bagId': typeof BagsBagIdRoute
   '/bins/$binId': typeof BinsBinIdRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/shelves/$categoryId': typeof ShelvesCategoryIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
   '/bags/': typeof BagsIndexRoute
   '/bins/': typeof BinsIndexRoute
+  '/categories/': typeof CategoriesIndexRoute
   '/roles/': typeof RolesIndexRoute
   '/shelves/': typeof ShelvesIndexRoute
   '/staff/': typeof StaffIndexRoute
@@ -130,15 +158,19 @@ export interface FileRoutesByTo {
   '/access': typeof AccessRoute
   '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
+  '/conditions': typeof ConditionsRoute
+  '/genders': typeof GendersRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
   '/bags/$bagId': typeof BagsBagIdRoute
   '/bins/$binId': typeof BinsBinIdRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/shelves/$categoryId': typeof ShelvesCategoryIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
   '/bags': typeof BagsIndexRoute
   '/bins': typeof BinsIndexRoute
+  '/categories': typeof CategoriesIndexRoute
   '/roles': typeof RolesIndexRoute
   '/shelves': typeof ShelvesIndexRoute
   '/staff': typeof StaffIndexRoute
@@ -149,15 +181,19 @@ export interface FileRoutesById {
   '/access': typeof AccessRoute
   '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
+  '/conditions': typeof ConditionsRoute
+  '/genders': typeof GendersRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
   '/bags/$bagId': typeof BagsBagIdRoute
   '/bins/$binId': typeof BinsBinIdRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/shelves/$categoryId': typeof ShelvesCategoryIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
   '/bags/': typeof BagsIndexRoute
   '/bins/': typeof BinsIndexRoute
+  '/categories/': typeof CategoriesIndexRoute
   '/roles/': typeof RolesIndexRoute
   '/shelves/': typeof ShelvesIndexRoute
   '/staff/': typeof StaffIndexRoute
@@ -169,15 +205,19 @@ export interface FileRouteTypes {
     | '/access'
     | '/account'
     | '/callback'
+    | '/conditions'
+    | '/genders'
     | '/more'
     | '/welcome'
     | '/bags/$bagId'
     | '/bins/$binId'
+    | '/categories/$categoryId'
     | '/roles/$roleId'
     | '/shelves/$categoryId'
     | '/staff/$staffId'
     | '/bags/'
     | '/bins/'
+    | '/categories/'
     | '/roles/'
     | '/shelves/'
     | '/staff/'
@@ -187,15 +227,19 @@ export interface FileRouteTypes {
     | '/access'
     | '/account'
     | '/callback'
+    | '/conditions'
+    | '/genders'
     | '/more'
     | '/welcome'
     | '/bags/$bagId'
     | '/bins/$binId'
+    | '/categories/$categoryId'
     | '/roles/$roleId'
     | '/shelves/$categoryId'
     | '/staff/$staffId'
     | '/bags'
     | '/bins'
+    | '/categories'
     | '/roles'
     | '/shelves'
     | '/staff'
@@ -205,15 +249,19 @@ export interface FileRouteTypes {
     | '/access'
     | '/account'
     | '/callback'
+    | '/conditions'
+    | '/genders'
     | '/more'
     | '/welcome'
     | '/bags/$bagId'
     | '/bins/$binId'
+    | '/categories/$categoryId'
     | '/roles/$roleId'
     | '/shelves/$categoryId'
     | '/staff/$staffId'
     | '/bags/'
     | '/bins/'
+    | '/categories/'
     | '/roles/'
     | '/shelves/'
     | '/staff/'
@@ -224,15 +272,19 @@ export interface RootRouteChildren {
   AccessRoute: typeof AccessRoute
   AccountRoute: typeof AccountRoute
   CallbackRoute: typeof CallbackRoute
+  ConditionsRoute: typeof ConditionsRoute
+  GendersRoute: typeof GendersRoute
   MoreRoute: typeof MoreRoute
   WelcomeRoute: typeof WelcomeRoute
   BagsBagIdRoute: typeof BagsBagIdRoute
   BinsBinIdRoute: typeof BinsBinIdRoute
+  CategoriesCategoryIdRoute: typeof CategoriesCategoryIdRoute
   RolesRoleIdRoute: typeof RolesRoleIdRoute
   ShelvesCategoryIdRoute: typeof ShelvesCategoryIdRoute
   StaffStaffIdRoute: typeof StaffStaffIdRoute
   BagsIndexRoute: typeof BagsIndexRoute
   BinsIndexRoute: typeof BinsIndexRoute
+  CategoriesIndexRoute: typeof CategoriesIndexRoute
   RolesIndexRoute: typeof RolesIndexRoute
   ShelvesIndexRoute: typeof ShelvesIndexRoute
   StaffIndexRoute: typeof StaffIndexRoute
@@ -266,6 +318,20 @@ declare module '@tanstack/react-router' {
       path: '/callback'
       fullPath: '/callback'
       preLoaderRoute: typeof CallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conditions': {
+      id: '/conditions'
+      path: '/conditions'
+      fullPath: '/conditions'
+      preLoaderRoute: typeof ConditionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/genders': {
+      id: '/genders'
+      path: '/genders'
+      fullPath: '/genders'
+      preLoaderRoute: typeof GendersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/more': {
@@ -308,6 +374,20 @@ declare module '@tanstack/react-router' {
       path: '/bins/$binId'
       fullPath: '/bins/$binId'
       preLoaderRoute: typeof BinsBinIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/': {
+      id: '/categories/'
+      path: '/categories'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof CategoriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/$categoryId': {
+      id: '/categories/$categoryId'
+      path: '/categories/$categoryId'
+      fullPath: '/categories/$categoryId'
+      preLoaderRoute: typeof CategoriesCategoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roles/': {
@@ -360,15 +440,19 @@ const rootRouteChildren: RootRouteChildren = {
   AccessRoute: AccessRoute,
   AccountRoute: AccountRoute,
   CallbackRoute: CallbackRoute,
+  ConditionsRoute: ConditionsRoute,
+  GendersRoute: GendersRoute,
   MoreRoute: MoreRoute,
   WelcomeRoute: WelcomeRoute,
   BagsBagIdRoute: BagsBagIdRoute,
   BinsBinIdRoute: BinsBinIdRoute,
+  CategoriesCategoryIdRoute: CategoriesCategoryIdRoute,
   RolesRoleIdRoute: RolesRoleIdRoute,
   ShelvesCategoryIdRoute: ShelvesCategoryIdRoute,
   StaffStaffIdRoute: StaffStaffIdRoute,
   BagsIndexRoute: BagsIndexRoute,
   BinsIndexRoute: BinsIndexRoute,
+  CategoriesIndexRoute: CategoriesIndexRoute,
   RolesIndexRoute: RolesIndexRoute,
   ShelvesIndexRoute: ShelvesIndexRoute,
   StaffIndexRoute: StaffIndexRoute,

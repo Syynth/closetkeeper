@@ -62,3 +62,20 @@ export function LockIcon(props: SVGProps<SVGSVGElement>) {
 		</Icon>
 	);
 }
+
+export function ShelfIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<Icon {...props}>
+			<path d="M3 6h18M3 12h18M3 18h18" />
+		</Icon>
+	);
+}
+
+export function BagIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<Icon {...props}>
+			<path d="M6 8h12l1 12H5z" />
+			<path d="M9 8V6a3 3 0 0 1 6 0v2" />
+		</Icon>
+	);
+}

@@ -10,7 +10,8 @@ import type { ReactNode } from "react";
 import { useAuth } from "react-oidc-context";
 import { useSpacetimeDB, useTable } from "spacetimedb/react";
 import { ConnectedToDatabase } from "../db";
-import { HomeIcon, MoreIcon } from "./icons";
+import { StockFilterProvider } from "../filter";
+import { BagIcon, HomeIcon, MoreIcon, ShelfIcon } from "./icons";
 import classes from "./Shell.module.css";
 import { SizeTag } from "./SizeTag";
 
@@ -43,7 +44,9 @@ export function AuthedPage({ children }: { children: ReactNode }) {
 	}
 	return (
 		<ConnectedToDatabase token={auth.user.id_token}>
-			<Shell>{children}</Shell>
+			<StockFilterProvider>
+				<Shell>{children}</Shell>
+			</StockFilterProvider>
 		</ConnectedToDatabase>
 	);
 }
@@ -58,7 +61,19 @@ function RoleTag() {
 }
 
 type Dest = {
-	to: "/" | "/more" | "/staff" | "/roles" | "/access" | "/account";
+	to:
+		| "/"
+		| "/more"
+		| "/shelves"
+		| "/bags"
+		| "/bins"
+		| "/categories"
+		| "/conditions"
+		| "/genders"
+		| "/staff"
+		| "/roles"
+		| "/access"
+		| "/account";
 	label: string;
 	group: string;
 };
@@ -66,6 +81,16 @@ type Dest = {
 function useDestinations(): Dest[] {
 	const can = useCan();
 	const out: Dest[] = [];
+	if (can("inventory.read")) {
+		out.push({ to: "/shelves", label: "Shelves", group: "The closet" });
+		out.push({ to: "/bags", label: "Bags", group: "The closet" });
+		out.push({ to: "/bins", label: "Bins & places", group: "The closet" });
+	}
+	if (can("inventory.manage")) {
+		out.push({ to: "/categories", label: "Categories", group: "The closet" });
+		out.push({ to: "/conditions", label: "Conditions", group: "The closet" });
+		out.push({ to: "/genders", label: "For", group: "The closet" });
+	}
 	if (can("staff.manage"))
 		out.push({ to: "/staff", label: "Staff & volunteers", group: "People" });
 	if (can("role.manage"))
@@ -134,6 +159,8 @@ export function Shell({ children }: { children: ReactNode }) {
 						<HomeIcon />
 						<span>Home</span>
 					</Link>
+					<ShelvesTab />
+					<BagsTab />
 					<Link to="/more" className={classes.tab}>
 						<MoreIcon />
 						<span>More</span>
@@ -141,5 +168,28 @@ export function Shell({ children }: { children: ReactNode }) {
 				</nav>
 			</div>
 		</div>
+	);
+}
+
+/** Shown only to a role that can see the closet. */
+function ShelvesTab() {
+	const can = useCan();
+	if (!can("inventory.read")) return null;
+	return (
+		<Link to="/shelves" className={classes.tab}>
+			<ShelfIcon />
+			<span>Shelves</span>
+		</Link>
+	);
+}
+
+function BagsTab() {
+	const can = useCan();
+	if (!can("inventory.read")) return null;
+	return (
+		<Link to="/bags" className={classes.tab}>
+			<BagIcon />
+			<span>Bags</span>
+		</Link>
 	);
 }
