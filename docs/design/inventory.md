@@ -3,7 +3,7 @@
 Design for the first version of stock tracking, from the 2026-09-05
 conversation. Decisions with their reasons are in
 [`../decision-log.md`](../decision-log.md) under "inventory"; this document
-is the shape they add up to. It is written to be built in the four steps at
+is the shape they add up to. It is written to be built in the three steps at
 the end, each a PR.
 
 ## Principles carried in
@@ -71,44 +71,25 @@ receipt has somewhere to hang), note.
 
 `bag_line` — id, bag_id, slot_id, count, created_at, created_by.
 
-A bag is opened, lines and photos are added in any order, and it is closed.
-Closing writes one `stock_movement` per line and locks the lines. An open bag
-affects nothing on the shelves. A bag with photos and no lines can be closed
-and tagged later; tagging a photo on a closed bag adds a line and its
-movement immediately. Reopening is not a thing: corrections go through
+A bag is opened, lines are added, and it is closed. Closing writes one
+`stock_movement` per line and locks the lines. An open bag affects nothing
+on the shelves. Reopening is not a thing: corrections go through
 `correction`.
 
-## Photos
+## Photos: not planned
 
-`photo` — id, bag_id, object_key, taken_at, uploaded_by, status
-(`untagged` \| `tagged` \| `discarded`), bag_line_id (0 until tagged),
-item_id (0 unless the photo was taken for a labeled item).
-
-The bytes live in Cloudflare R2, in a private bucket, behind a small Worker
-(`apps/edge`, phase 2 of this design). The Worker never holds a secret of
-its own. It takes the caller's SpacetimeAuth token, asks the database *as
-that caller* whether `my_staff` returns a row, and only then streams the
-upload into R2 or the download out of it. It proxies rather than signing
-URLs, so no S3 credential exists anywhere. The phone downsizes to ~1200 px
-before upload. The database row is written by `register_photo` after the
-Worker confirms the object exists.
-
-**Rules.** No people in item photos; the intake screen says so. A photo is
-purged when the bag it belongs to is purged, on the same retention schedule
-as everything else. The `photo` table is private like the rest.
-
-**Snap now, tag later.** The camera screen is the bag's second tab: shutter,
-shutter, shutter, no other input. The tag screen shows the bag's untagged
-photos as a strip; tapping one asks the five intake questions and creates
-or increments a line with the photo attached. Discard marks the photo as not
-an item. Untagged photos are a visible to-do on the bag list, not a lie in
-the counts.
+Camera-first intake (snap a bag, tag later) was designed and then dropped
+on 2026-09-05; see the decision log. Intake is the five-tap line entry.
+Nothing here needs an object store or a Worker with code, so the
+one-Worker-or-two decision stays deferred.
 
 ## Items (optional identity)
 
 `item` — id, slot_id, status (`in_stock` \| `handed_out` \| `discarded`),
 label_code, tag_id (empty until a hardware tag is attached), location_id,
-bag_line_id (0 if unknown), created_at, created_by, photo_id (0 if none).
+bag_line_id (0 if unknown), created_at, created_by.
+
+Wanted, not a priority: step 2 below, after the counts have been in use.
 
 Labeling an item never changes a count; it names one unit that the count
 already includes. Handing an item out does both at once: the item's status
@@ -142,15 +123,15 @@ under `/.well-known/` on the admin origin, which the asset-only Worker can
 serve, and a real domain. The app uses the same module, the same generated
 bindings package, and the same SpacetimeAuth client with one more redirect
 URI; it needs a dev-client build, not Expo Go, because the NFC library is
-native. It is deliberately narrow: bags, camera, scan, tag writing, item
-and bin pages. Everything administrative stays on the web. UI is not
+native. It is deliberately narrow: bags, scan, tag writing, item and bin
+pages. Everything administrative stays on the web. UI is not
 shared with the web app (Mantine is web-only); tokens and the tag visual
 carry over.
 
 ## Reserved for hardware, not built
 
-Two tables and one endpoint, added in phase 4 or whenever a reader exists.
-Nothing in phases 1–3 needs migrating for them.
+Two tables and one endpoint, added in step 3 or whenever a reader exists.
+Nothing in steps 1–2 needs migrating for them.
 
 - `device` — id, label, identity, location_id, active. The allowlist for
   readers, the same idea as `staff_member` for people. A device identity is
@@ -158,8 +139,9 @@ Nothing in phases 1–3 needs migrating for them.
 - `sighting` — id, tag_id, device_id, at. Append-only, purged on a schedule
   like `access_event`. Whether the tag is a UHF RFID EPC, a BLE beacon, or
   an NFC sticker, it is a string here and on the item.
-- The edge Worker gains one route that accepts a reader's post, checks its
-  device credential, and calls `record_sighting` as that device's identity.
+- A small Worker with code (the project's first) with one route that
+  accepts a reader's post, checks its device credential, and calls
+  `record_sighting` as that device's identity.
   Location updates on items derive from sightings, by reducer, not by the
   device.
 
@@ -174,12 +156,9 @@ All via `defineAdminReducer`. Capability `inventory.write` unless noted.
 | `add_bag_line(bag_id, category_id, size_id, gender_id, condition_id, count)` | Finds or creates the slot; adds or increments the line. Open bags only. |
 | `remove_bag_line(line_id)` | Open bags only. |
 | `close_bag(bag_id)` | Writes a movement per line, locks the bag. |
-| `register_photo(bag_id, object_key, taken_at)` | After upload. |
-| `tag_photo(photo_id, category_id, size_id, gender_id, condition_id, count)` | Adds or increments a line, attaches the photo; on a closed bag also writes the movement. |
-| `discard_photo(photo_id)` | Not an item. |
 | `hand_out(slot_id, count, note)` | −count movement. |
 | `correct_count(slot_id, on_hand, note)` | Movement for the difference; note required. |
-| `label_item(slot_id, bag_line_id, photo_id)` | Creates an item with a fresh label code. |
+| `label_item(slot_id, bag_line_id)` | Creates an item with a fresh label code. |
 | `hand_out_item(label_code)`, `discard_item(label_code)`, `move_item(label_code, location_id)` | Item status and location; hand-out and discard also write the −1 movement. |
 | `set_item_tag(label_code, tag_id)` | Attaches a hardware tag. |
 
@@ -192,9 +171,8 @@ Gated by `inventory.read`, which every role holds:
 
 - `shelves` — one row per shelved slot with on-hand > 0, joined with the
   four labels and sort orders. The grid.
-- `bag_list` — bags with line count, untagged-photo count, status.
-- `bag_detail` — lines and photos for one bag (parameterized view, or two
-  views filtered client-side).
+- `bag_list` — bags with line count and status.
+- `bag_lines` — lines with their slot labels, filtered client-side by bag.
 - `item_lookup` — by label code, for the scan path.
 
 Vocabulary tables can be read directly by clients through views of their
@@ -206,25 +184,22 @@ guardrail like everything else.
 - **Shelves.** Category rows, size columns, gender and condition as filters
   above the grid with the counts summed when unfiltered. Tapping a cell
   offers hand out, correct, and labeled items in that slot.
-- **Bags.** List with open bags first, each showing lines and untagged
-  photos. New bag is one tap, donated or purchased.
-- **Bag.** Three tabs: Lines (the five-tap intake), Camera, Tag. Close is a
-  single button with a summary.
-- **Item.** What it is, where it is, its photo, hand out, move, discard.
-  Reached by scanning or by the `/i/<code>` link.
+- **Bags.** List with open bags first, each showing its line count. New bag
+  is one tap, donated or purchased.
+- **Bag.** The five-tap intake, a running list of lines, and Close with a
+  summary.
+- **Item.** What it is, where it is, hand out, move, discard. Reached by
+  scanning or by the `/i/<code>` link.
 - **Scan.** Camera viewfinder; a recognised label opens the item.
 - **More → Categories, Sizes, Genders, Conditions, Locations.** Same list
   and detail pattern as Roles.
 
 ## Steps
 
-1. **Vocabularies, spine, ledger, bags without photos.** Tables, seeds,
-   reducers, views, guardrail entries, the shelves grid, the bag list, and
-   the five-tap intake. Export as CSV in the browser.
-2. **Photos.** The `apps/edge` Worker with R2, the camera tab, snap now and
-   tag later. First server-side code in the project; the deferred
-   one-Worker-or-two decision gets decided here.
-3. **Items and labels.** Item table, label codes, the item page, label PDF,
-   scan to hand out.
-4. **Readers.** Device allowlist, sightings, the reader route. When there is
-   hardware to test against.
+1. **Vocabularies, spine, ledger, bags.** Tables, seeds, reducers, views,
+   guardrail entries, the shelves grid, the bag list, and the five-tap
+   intake. Export as CSV in the browser.
+2. **Items and labels.** Item table, label codes, the item and bin pages,
+   label PDF, scan to hand out. Wanted, not a priority.
+3. **Readers.** Device allowlist, sightings, the reader route, and the first
+   server-side Worker. When there is hardware to test against.
