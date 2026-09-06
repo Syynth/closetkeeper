@@ -11,11 +11,8 @@ import {
 } from "spacetimedb";
 
 export default __t.row({
-  roleId: __t.u64().primaryKey().name("role_id"),
-  key: __t.string(),
-  label: __t.string(),
-  description: __t.string(),
-  system: __t.bool(),
-  protected: __t.bool(),
-  holders: __t.u32(),
+  eventId: __t.u64().primaryKey().name("event_id"),
+  at: __t.timestamp(),
+  loginLabel: __t.string().name("login_label"),
+  outcome: __t.string(),
 });

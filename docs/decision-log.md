@@ -352,3 +352,33 @@ Entries are appended at the bottom, newest last.
   president should not have more access than the secretary or treasurer,
   and "system administrator" names what the technical role is for.
   Access to the system is a job, not a rank.
+
+## Last sign-in is visible to staff managers; the access log is not
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** minor/local
+- **STATUS:** tentative
+- **WHAT:** The staff directory shows anyone with `staff.manage` a coarse
+  last-sign-in timestamp and whether a person has ever signed in. The full
+  access log, including emails of people who are not staff, needs a new
+  protected capability `access.read`, held by the system administrator only.
+- **WHY:** Made by the assistant, not yet ratified: a manager needs "was
+  this invitation ever used" to do the job, while the access log carries
+  personal data about non-staff and belongs with the person who runs the
+  system. Flip it by moving `access.read` into other roles' bundles or by
+  dropping the two directory columns.
+
+## Capabilities are shown in plain English
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** module
+- **SCOPE:** minor/local
+- **STATUS:** tentative
+- **WHAT:** Every capability carries a label and a group in
+  `auth-rules.ts` ("See requests and families", under "Families"), and a
+  test fails if one is missing. Screens show the labels; the keys stay in
+  code and the database.
+- **WHY:** Made by the assistant, not yet ratified: the Role screen is a
+  list of switches that an officer of the org has to read, and
+  `family.write` is not a sentence. The cost is one line per capability.

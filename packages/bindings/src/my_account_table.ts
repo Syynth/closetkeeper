@@ -11,14 +11,9 @@ import {
 } from "spacetimedb";
 
 export default __t.row({
-  staffId: __t.u64().primaryKey().name("staff_id"),
-  personId: __t.u64().name("person_id"),
+  personId: __t.u64().primaryKey().name("person_id"),
   displayName: __t.string().name("display_name"),
   email: __t.string(),
   roleKey: __t.string().name("role_key"),
   roleLabel: __t.string().name("role_label"),
-  active: __t.bool(),
-  invitedAt: __t.timestamp().name("invited_at"),
-  hasSignedIn: __t.bool().name("has_signed_in"),
-  lastSeenAt: __t.timestamp().name("last_seen_at"),
 });
