@@ -21,4 +21,5 @@ export default __t.row({
   invitedAt: __t.timestamp().name("invited_at"),
   hasSignedIn: __t.bool().name("has_signed_in"),
   lastSeenAt: __t.timestamp().name("last_seen_at"),
+  welcomed: __t.bool(),
 });

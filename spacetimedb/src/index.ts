@@ -181,6 +181,8 @@ const StaffDirectoryRow = t.row("StaffDirectoryEntry", {
 	has_signed_in: t.bool(),
 	/** Most recent connection by any of this person's logins; epoch 0 when none. */
 	last_seen_at: t.timestamp(),
+	/** Whether they have finished their first-visit welcome. */
+	welcomed: t.bool(),
 });
 
 /** Latest last_seen_at across a person's logins, or epoch 0 when they have none. */
@@ -228,6 +230,7 @@ export const staffDirectory = spacetimedb.view(
 				invited_at: s.invited_at,
 				has_signed_in: seen.hasLogin,
 				last_seen_at: seen.at,
+				welcomed: s.welcomed_at.microsSinceUnixEpoch > 0n,
 			});
 		}
 		return out;

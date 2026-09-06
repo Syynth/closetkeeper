@@ -16,6 +16,13 @@ export default defineConfig({
 					// Publishing to a local instance is slow the first time.
 					testTimeout: 60_000,
 					hookTimeout: 120_000,
+					// The integration files share one CLI and one local instance.
+					// Where the CLI has no saved login (CI), its first command
+					// mints and saves an identity; two files starting at once each
+					// mint their own, and whichever loses the write to the config
+					// file has published its database as an identity later calls
+					// no longer use. Serial files make the first command unique.
+					fileParallelism: false,
 				},
 			},
 			{

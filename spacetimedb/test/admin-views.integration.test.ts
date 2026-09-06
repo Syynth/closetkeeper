@@ -29,6 +29,14 @@ describe("admin views", () => {
 		expect(byName.get("Publisher")?.[2]?.[0]).toBeGreaterThan(0);
 		expect(byName.get("Val")?.[1]).toBe(false);
 		expect(byName.get("Val")?.[2]?.[0]).toBe(0);
+		const welcomed = new Map(
+			sql<[string, boolean]>(
+				DATABASE,
+				"SELECT display_name, welcomed FROM staff_directory",
+			),
+		);
+		expect(welcomed.get("Publisher")).toBe(true);
+		expect(welcomed.get("Val")).toBe(false);
 	});
 
 	it("role_options counts active holders", () => {

@@ -170,6 +170,7 @@ export const StaffDirectoryEntry = __t.object("StaffDirectoryEntry", {
   invitedAt: __t.timestamp(),
   hasSignedIn: __t.bool(),
   lastSeenAt: __t.timestamp(),
+  welcomed: __t.bool(),
 });
 export type StaffDirectoryEntry = __Infer<typeof StaffDirectoryEntry>;
 

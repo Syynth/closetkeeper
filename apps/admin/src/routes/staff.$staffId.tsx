@@ -3,6 +3,7 @@ import {
 	Alert,
 	Button,
 	Card,
+	Group,
 	NativeSelect,
 	Stack,
 	Switch,
@@ -144,6 +145,14 @@ function PersonForm({ person }: { person: Entry }) {
 					</SizeTag>
 				}
 			/>
+			{!person.welcomed ? (
+				<Group gap="xs" mb="md">
+					<SizeTag tone="clay">Welcome not finished</SizeTag>
+					<Text size="sm" c="dimmed">
+						They haven't confirmed their name yet.
+					</Text>
+				</Group>
+			) : null}
 			<form onSubmit={form.onSubmit(save)}>
 				<Stack gap="lg">
 					<TextInput label="Name" {...form.getInputProps("display_name")} />
