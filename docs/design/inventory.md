@@ -101,9 +101,8 @@ they walk to. Three rules keep that from costing taps:
   whose stock is all in one bin states the bin and hands out. Only genuinely
   split stock shows a chooser, biggest bin first.
 - **A filter, not a column.** The shelves and the grid sum across bins by
-  default, with a bin filter under the gender segments. Filtering by a bin
-  shows only what that bin holds, which is the same view a bin's own sticker
-  opens.
+  default. Filtering by a bin shows only what that bin holds, which is the
+  same view a bin's own sticker opens.
 
 Bins are managed under More, Bins & places: add, rename, reorder, retire,
 see what is inside, and "count this bin", which walks its contents one line
@@ -221,10 +220,17 @@ guardrail like everything else.
 
 - **Shelves.** On a phone, a list of categories with the total and a faint
   histogram of that category's spread across sizes behind each row; the grid
-  itself is a desktop thing. Gender segments on their own row, then the bin
-  filter. Tapping a category opens its size grid, each cell filled in
-  proportion to what it holds. Tapping a cell offers hand out and set a
-  bin's count.
+  itself is a desktop thing. Tapping a category opens its size grid, each
+  cell filled in proportion to what it holds. Tapping a cell offers hand out
+  and set a bin's count.
+
+**One filter control**, the same on the phone and the desk: a single bar
+that reads what you are looking at ("Boys · Bin 3 · New, Good"), grey while
+it narrows nothing and pine when it does, with Clear appearing only then.
+It opens one sheet holding every axis — for, in, condition — each option
+carrying its own count so the cost of a choice is visible before making it,
+and a button that says exactly what you will get. Another axis later costs
+a group in that sheet, not another control on the screen.
 - **Bags.** List with open bags first, each showing its line count. New bag
   is one tap, donated or purchased.
 - **Bag.** The five-tap intake, a running list of lines, and Close with a
