@@ -36,6 +36,7 @@ import {
 // Import all reducer arg schemas
 import CreateRoleReducer from "./create_role_reducer";
 import DeleteRoleReducer from "./delete_role_reducer";
+import FinishWelcomeReducer from "./finish_welcome_reducer";
 import GrantCapabilityReducer from "./grant_capability_reducer";
 import InviteStaffReducer from "./invite_staff_reducer";
 import RemoveMyLoginReducer from "./remove_my_login_reducer";
@@ -124,6 +125,7 @@ const tablesSchema = __schema({
 const reducersSchema = __reducers(
   __reducerSchema("create_role", CreateRoleReducer),
   __reducerSchema("delete_role", DeleteRoleReducer),
+  __reducerSchema("finish_welcome", FinishWelcomeReducer),
   __reducerSchema("grant_capability", GrantCapabilityReducer),
   __reducerSchema("invite_staff", InviteStaffReducer),
   __reducerSchema("remove_my_login", RemoveMyLoginReducer),

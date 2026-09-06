@@ -13,7 +13,7 @@ export function invitationText({
 	email: string;
 	roleLabel: string;
 }): string {
-	const url = window.location.origin;
+	const url = `${window.location.origin}/welcome`;
 	return [
 		`You've been added to Closetkeeper as ${roleLabel.toLowerCase()}.`,
 		`Open ${url} and tap Log in, then enter ${email}.`,

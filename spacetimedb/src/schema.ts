@@ -1,4 +1,4 @@
-import { ScheduleAt } from "spacetimedb";
+import { ScheduleAt, Timestamp } from "spacetimedb";
 import { schema, t, table } from "spacetimedb/server";
 
 /**
@@ -94,6 +94,11 @@ const staff_member = table(
 		active: t.bool(),
 		invited_at: t.timestamp(),
 		invited_by: t.u64(),
+		/**
+		 * When the person finished their first-visit welcome; epoch 0 until
+		 * then. Appended with a default so existing rows migrate in place.
+		 */
+		welcomed_at: t.timestamp().default(new Timestamp(0n)),
 	},
 );
 

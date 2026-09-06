@@ -14,6 +14,7 @@ import { Route as AccessRouteImport } from './routes/access'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as MoreRouteImport } from './routes/more'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as RolesIndexRouteImport } from './routes/roles.index'
 import { Route as RolesRoleIdRouteImport } from './routes/roles.$roleId'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
@@ -44,6 +45,11 @@ const MoreRoute = MoreRouteImport.update({
   path: '/more',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
   id: '/roles/',
   path: '/roles/',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
   '/more': typeof MoreRoute
+  '/welcome': typeof WelcomeRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
   '/roles/': typeof RolesIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
   '/more': typeof MoreRoute
+  '/welcome': typeof WelcomeRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
   '/roles': typeof RolesIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
   '/more': typeof MoreRoute
+  '/welcome': typeof WelcomeRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
   '/roles/': typeof RolesIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/callback'
     | '/more'
+    | '/welcome'
     | '/roles/$roleId'
     | '/staff/$staffId'
     | '/roles/'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/callback'
     | '/more'
+    | '/welcome'
     | '/roles/$roleId'
     | '/staff/$staffId'
     | '/roles'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/callback'
     | '/more'
+    | '/welcome'
     | '/roles/$roleId'
     | '/staff/$staffId'
     | '/roles/'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   CallbackRoute: typeof CallbackRoute
   MoreRoute: typeof MoreRoute
+  WelcomeRoute: typeof WelcomeRoute
   RolesRoleIdRoute: typeof RolesRoleIdRoute
   StaffStaffIdRoute: typeof StaffStaffIdRoute
   RolesIndexRoute: typeof RolesIndexRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MoreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/roles/': {
       id: '/roles/'
       path: '/roles'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   CallbackRoute: CallbackRoute,
   MoreRoute: MoreRoute,
+  WelcomeRoute: WelcomeRoute,
   RolesRoleIdRoute: RolesRoleIdRoute,
   StaffStaffIdRoute: StaffStaffIdRoute,
   RolesIndexRoute: RolesIndexRoute,

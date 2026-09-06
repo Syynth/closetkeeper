@@ -170,6 +170,7 @@ export const StaffDirectoryEntry = __t.object("StaffDirectoryEntry", {
   invitedAt: __t.timestamp(),
   hasSignedIn: __t.bool(),
   lastSeenAt: __t.timestamp(),
+  welcomed: __t.bool(),
 });
 export type StaffDirectoryEntry = __Infer<typeof StaffDirectoryEntry>;
 
@@ -180,16 +181,21 @@ export const StaffMember = __t.object("StaffMember", {
   active: __t.bool(),
   invitedAt: __t.timestamp(),
   invitedBy: __t.u64(),
+  welcomedAt: __t.timestamp(),
 });
 export type StaffMember = __Infer<typeof StaffMember>;
 
 export const StaffStanding = __t.object("StaffStanding", {
   staffId: __t.u64(),
   personId: __t.u64(),
+  displayName: __t.string(),
   roleKey: __t.string(),
   roleLabel: __t.string(),
+  roleDescription: __t.string(),
   active: __t.bool(),
   capabilities: __t.array(__t.string()),
+  capabilityLabels: __t.array(__t.string()),
+  welcomed: __t.bool(),
 });
 export type StaffStanding = __Infer<typeof StaffStanding>;
 
