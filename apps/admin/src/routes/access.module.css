@@ -15,3 +15,21 @@
 	border-color: var(--mantine-color-pine-7);
 	color: var(--mantine-color-white);
 }
+
+/* Also used by the audit log, which is the same kind of list. */
+.row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.7rem 0.25rem;
+	border-bottom: 1px solid var(--mantine-color-bark-1);
+}
+
+.details {
+	display: block;
+	margin-top: 0.15rem;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.72rem;
+	word-break: break-all;
+}

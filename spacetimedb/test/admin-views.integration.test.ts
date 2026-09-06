@@ -205,4 +205,23 @@ describe("first-visit welcome", () => {
 		expect(labels.length).toBe(caps.length);
 		expect(labels).toContain("See the shelves");
 	});
+
+	it("the audit log records what happened, without names or emails", () => {
+		const rows = sqlAs<[string, string, string]>(
+			DATABASE,
+			"SELECT action, actor_name, details FROM audit_log",
+		);
+		// init seeded the database, and this suite invited someone.
+		const actions = rows.map((r) => r[0]);
+		expect(actions).toContain("init");
+		expect(actions).toContain("invite_staff");
+		// The invited email is redacted; the role key is not.
+		const invite = rows.find((r) => r[0] === "invite_staff");
+		expect(invite?.[2]).toContain("role_key");
+		expect(invite?.[2]).not.toContain("@");
+		// A stranger sees nothing at all.
+		expect(
+			sqlAs(DATABASE, "SELECT action FROM audit_log", { anonymous: true }),
+		).toEqual([]);
+	});
 });

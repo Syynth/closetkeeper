@@ -84,9 +84,23 @@
 	white-space: nowrap;
 }
 
-.lineTag {
-	border: 0;
-	background: none;
-	padding: 0;
+.line {
+	padding: 0.55rem 0.15rem;
+	border-bottom: 1px solid var(--mantine-color-bark-1);
+}
+
+.remove {
+	width: 2.25rem;
+	height: 2.25rem;
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--mantine-color-bark-2);
+	border-radius: var(--mantine-radius-sm);
+	background: var(--mantine-color-white);
+	color: var(--mantine-color-bark-5);
+	font-size: 1.15rem;
+	line-height: 1;
 	cursor: pointer;
 }

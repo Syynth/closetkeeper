@@ -435,6 +435,7 @@ const AccessLogRow = t.row("AccessLogEntry", {
 });
 
 const ACCESS_LOG_LIMIT = 200;
+const AUDIT_LOG_LIMIT = 200;
 
 /**
  * The door's record, newest first, for callers holding access.read. It
@@ -485,6 +486,56 @@ function findRoleByKey(ctx: Ctx, key: string) {
  * Idempotent: inviting someone who is already an active staff member in
  * the same role is a no-op, so CI can run it after every publish.
  */
+/** One thing somebody did. The audit log is append-only, even for a system administrator. */
+const AuditLogRow = t.row("AuditLogEntry", {
+	event_id: t.u64().primaryKey(),
+	at: t.timestamp(),
+	/** Empty when the module itself acted: init, or a scheduled reducer. */
+	actor_name: t.string(),
+	actor_staff_id: t.u64(),
+	/** The reducer's name, e.g. "close_bag". */
+	action: t.string(),
+	target_table: t.string(),
+	target_id: t.u64(),
+	/** JSON of the arguments, minus anything personal. Never names or emails. */
+	details: t.string(),
+});
+
+/**
+ * Who did what. Gated on staff.manage: it is the record of staff actions,
+ * so the people who manage staff are the people who answer for them. It
+ * carries no names or emails by construction (see admin-reducer.ts), only
+ * ids and keys, so it is safe to read without seeing family data.
+ */
+export const auditLog = spacetimedb.view(
+	{ name: "audit_log", public: true },
+	t.array(AuditLogRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null || !me.capabilities.has("staff.manage")) return [];
+		const rows = [];
+		for (const ev of ctx.db.audit_event.iter()) {
+			const actor = ctx.db.staff_member.id.find(ev.actor_staff_id);
+			const person =
+				actor === null ? null : ctx.db.person.id.find(actor.person_id);
+			rows.push({
+				event_id: ev.id,
+				at: ev.at,
+				actor_name: person?.display_name ?? "",
+				actor_staff_id: ev.actor_staff_id,
+				action: ev.action,
+				target_table: ev.target_table,
+				target_id: ev.target_id,
+				details: ev.details,
+			});
+		}
+		rows.sort((a, b) =>
+			Number(b.at.microsSinceUnixEpoch - a.at.microsSinceUnixEpoch),
+		);
+		return rows.slice(0, AUDIT_LOG_LIMIT);
+	},
+);
+
 export const inviteStaff = defineAdminReducer(
 	{
 		name: "invite_staff",

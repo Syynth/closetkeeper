@@ -68,6 +68,7 @@ import UpdateSizeReducer from "./update_size_reducer";
 
 // Import all table schema definitions
 import AccessLogRow from "./access_log_table";
+import AuditLogRow from "./audit_log_table";
 import BagLinesRow from "./bag_lines_table";
 import BagListRow from "./bag_list_table";
 import BinLevelsRow from "./bin_levels_table";
@@ -98,6 +99,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, AccessLogRow),
+  auditLog: __table({
+    name: 'audit_log',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, AuditLogRow),
   bagLines: __table({
     name: 'bag_lines',
     indexes: [

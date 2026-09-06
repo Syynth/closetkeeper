@@ -62,6 +62,21 @@ export const AuditEvent = __t.object("AuditEvent", {
 });
 export type AuditEvent = __Infer<typeof AuditEvent>;
 
+export const AuditLog = __t.object("AuditLog", {});
+export type AuditLog = __Infer<typeof AuditLog>;
+
+export const AuditLogEntry = __t.object("AuditLogEntry", {
+  eventId: __t.u64(),
+  at: __t.timestamp(),
+  actorName: __t.string(),
+  actorStaffId: __t.u64(),
+  action: __t.string(),
+  targetTable: __t.string(),
+  targetId: __t.u64(),
+  details: __t.string(),
+});
+export type AuditLogEntry = __Infer<typeof AuditLogEntry>;
+
 export const AuthProviderLink = __t.object("AuthProviderLink", {
   id: __t.u64(),
   identity: __t.identity(),

@@ -73,6 +73,7 @@ type Dest = {
 		| "/staff"
 		| "/roles"
 		| "/access"
+		| "/audit"
 		| "/account";
 	label: string;
 	group: string;
@@ -95,6 +96,8 @@ function useDestinations(): Dest[] {
 		out.push({ to: "/staff", label: "Staff & volunteers", group: "People" });
 	if (can("role.manage"))
 		out.push({ to: "/roles", label: "Roles", group: "People" });
+	if (can("staff.manage"))
+		out.push({ to: "/audit", label: "Audit log", group: "Records" });
 	if (can("access.read"))
 		out.push({ to: "/access", label: "Access log", group: "Records" });
 	out.push({ to: "/account", label: "Account", group: "You" });
