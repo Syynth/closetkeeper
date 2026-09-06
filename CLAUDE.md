@@ -155,9 +155,10 @@ unavailable.
 chaotic ("8", "8-10", "youth M", "size 9") and free text destroys the gap
 analysis within weeks. Dropdown only, sourced from the size table.
 
-**Category × size is the spine.** Inventory counts and open requests both roll
-up to a `category_size` row. The gap report is on-hand minus open requests,
-grouped by that spine. This drives both purchasing and donation asks.
+**Category × size × gender × condition is the spine.** Inventory counts and
+open requests both roll up to that combination. The gap report is on-hand
+minus open requests, grouped by it. This drives both purchasing and donation
+asks. Gender and condition are vocabularies like the rest.
 
 **Personhood is separate from identity.** Most families and donors will never
 log in — they phone, or drop off a bag at a fundraiser.
@@ -322,8 +323,10 @@ Suppression logic belongs in the cron job or a reducer — never in the template
 
 ## Things deliberately not built
 
-- Item-level SKU tracking of individual garments. Counts by category and size
-  only. Per-garment tracking is what kills volunteer adoption within a month.
+- Mandatory per-garment tracking. Counts by category × size × gender ×
+  condition are the source of truth; an item identity (ID, QR label, tag ID,
+  location) is optional and layered on top. Volunteers are never required to
+  label anything. See `docs/decision-log.md`, "Optional item identity".
 - Family login as a prerequisite for requesting help. The public request form
   works with no account; accounts are optional and added later via magic link.
 - Server-side subscriptions. Cloudflare Workers cannot hold long-lived outbound
