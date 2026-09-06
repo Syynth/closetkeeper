@@ -1,0 +1,76 @@
+.row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	width: 100%;
+	min-height: 3.5rem;
+	padding: 0.5rem 0.25rem;
+	border: 0;
+	border-bottom: 1px solid var(--mantine-color-bark-1);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.row:hover {
+	background: var(--mantine-color-pine-0);
+}
+
+.text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	flex: 1;
+	min-width: 0;
+}
+
+.title {
+	font-weight: 700;
+	font-size: 1.05rem;
+}
+
+.detail {
+	font-size: 0.9rem;
+	color: var(--mantine-color-bark-6);
+	/* One line; a long email is recognisable from its start. */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.right {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	flex: none;
+	color: var(--mantine-color-bark-6);
+}
+
+.chevron {
+	color: var(--mantine-color-bark-3);
+}
+
+.group {
+	display: flex;
+	flex-direction: column;
+}
+
+.groupLabel {
+	margin: 0;
+	padding: 0.5rem 0.25rem;
+	font-family: var(--mantine-font-family);
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--mantine-color-bark-5);
+}
+
+.groupBody {
+	display: flex;
+	flex-direction: column;
+}

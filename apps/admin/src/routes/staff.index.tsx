@@ -3,9 +3,9 @@ import {
 	Alert,
 	Button,
 	Card,
+	Collapse,
 	NativeSelect,
 	Stack,
-	Table,
 	Text,
 	TextInput,
 	Title,
@@ -13,96 +13,92 @@ import {
 import { useForm } from "@mantine/form";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAuth } from "react-oidc-context";
 import { useReducer, useTable } from "spacetimedb/react";
-import { Shell, useMyStaff } from "../components/Shell";
+import { InviteMessage } from "../components/InviteMessage";
+import { ListGroup, ListRow } from "../components/ListRow";
+import { PageHeader } from "../components/PageHeader";
+import { AuthedPage, useCan } from "../components/Shell";
 import { SizeTag } from "../components/SizeTag";
-import { ConnectedToDatabase } from "../db";
 
-export const Route = createFileRoute("/staff")({ component: StaffPage });
-
-function StaffPage() {
-	const auth = useAuth();
-	if (auth.isLoading) return null;
-	if (!auth.isAuthenticated || !auth.user?.id_token) {
-		return <Text p="lg">Sign in first.</Text>;
-	}
-	return (
-		<ConnectedToDatabase token={auth.user.id_token}>
-			<Shell>
-				<Staff />
-			</Shell>
-		</ConnectedToDatabase>
-	);
-}
+export const Route = createFileRoute("/staff/")({
+	component: () => (
+		<AuthedPage>
+			<Staff />
+		</AuthedPage>
+	),
+});
 
 function Staff() {
-	const { me, ready } = useMyStaff();
+	const can = useCan();
 	const [directory] = useTable(tables.staffDirectory);
 	const [roles] = useTable(tables.roleOptions);
+	const [adding, setAdding] = useState(false);
 
-	if (!ready) return <Text c="dimmed">Checking your access…</Text>;
-	if (!me?.capabilities.includes("staff.manage")) {
+	if (!can("staff.manage")) {
 		return (
-			<Card>
-				<Text>Your role can't manage staff.</Text>
-			</Card>
+			<>
+				<PageHeader title="Staff & volunteers" back="/more" />
+				<Card>
+					<Text>Your role can't manage staff.</Text>
+				</Card>
+			</>
 		);
 	}
 
 	const sorted = [...directory].sort((a, b) =>
 		a.displayName.localeCompare(b.displayName),
 	);
+	const notYet = sorted
+		.filter((s) => s.active && !s.hasSignedIn)
+		.map((s) => s.displayName);
 
 	return (
-		<Stack gap="xl">
-			<Title order={1}>Staff and volunteers</Title>
-			<InviteForm
-				roles={roles}
-				canAssignProtected={me.capabilities.includes("staff.manage_sensitive")}
-			/>
-			<div>
-				<Title order={2} mb="sm">
-					Everyone with access
-				</Title>
-				<Table.ScrollContainer minWidth={520}>
-					<Table verticalSpacing="sm">
-						<Table.Thead>
-							<Table.Tr>
-								<Table.Th>Name</Table.Th>
-								<Table.Th>Email</Table.Th>
-								<Table.Th>Role</Table.Th>
-								<Table.Th>Status</Table.Th>
-							</Table.Tr>
-						</Table.Thead>
-						<Table.Tbody>
-							{sorted.map((s) => (
-								<Table.Tr key={String(s.staffId)}>
-									<Table.Td fw={600}>{s.displayName}</Table.Td>
-									<Table.Td>
-										{s.email || (
-											<Text c="dimmed" span>
-												none
-											</Text>
-										)}
-									</Table.Td>
-									<Table.Td>
-										<SizeTag>{s.roleLabel}</SizeTag>
-									</Table.Td>
-									<Table.Td>
-										{s.active ? (
-											<SizeTag tone="pine">active</SizeTag>
-										) : (
-											<SizeTag tone="muted">deactivated</SizeTag>
-										)}
-									</Table.Td>
-								</Table.Tr>
-							))}
-						</Table.Tbody>
-					</Table>
-				</Table.ScrollContainer>
-			</div>
-		</Stack>
+		<>
+			<PageHeader title="Staff & volunteers" back="/more" />
+			<Stack gap="lg">
+				<Button
+					onClick={() => setAdding((v) => !v)}
+					variant={adding ? "light" : "filled"}
+				>
+					{adding ? "Cancel" : "Add someone"}
+				</Button>
+				<Collapse expanded={adding}>
+					<AddForm
+						roles={roles}
+						canAssignProtected={can("staff.manage_sensitive")}
+						onDone={() => setAdding(false)}
+					/>
+				</Collapse>
+				<ListGroup>
+					{sorted.map((s) => (
+						<ListRow
+							key={String(s.staffId)}
+							title={s.displayName}
+							detail={s.email || "no email"}
+							right={
+								<>
+									<SizeTag
+										tone={s.roleKey === "system_admin" ? "pine" : "tape"}
+									>
+										{s.roleLabel}
+									</SizeTag>
+									{s.active ? null : (
+										<SizeTag tone="muted">deactivated</SizeTag>
+									)}
+								</>
+							}
+							to="/staff/$staffId"
+							params={{ staffId: String(s.staffId) }}
+						/>
+					))}
+				</ListGroup>
+				{notYet.length > 0 ? (
+					<Text size="sm" c="dimmed">
+						Hasn't signed in yet: {notYet.join(", ")}
+					</Text>
+				) : null}
+			</Stack>
+		</>
 	);
 }
 
@@ -115,20 +111,22 @@ type RoleOption = {
 
 /**
  * Adding someone creates their invitation. Nothing is emailed by us: they
- * sign in with this address and the door opens. The copy says exactly that.
+ * sign in with this address and the door opens.
  */
-function InviteForm({
+function AddForm({
 	roles,
 	canAssignProtected,
+	onDone,
 }: {
 	roles: readonly RoleOption[];
 	canAssignProtected: boolean;
+	onDone: () => void;
 }) {
 	const invite = useReducer(reducers.inviteStaff);
 	const [status, setStatus] = useState<
 		| { kind: "idle" }
 		| { kind: "busy" }
-		| { kind: "done"; email: string }
+		| { kind: "done"; email: string; roleLabel: string }
 		| { kind: "error"; message: string }
 	>({ kind: "idle" });
 
@@ -166,7 +164,13 @@ function InviteForm({
 						displayName: values.display_name.trim(),
 						roleKey: values.role_key,
 					});
-					setStatus({ kind: "done", email: values.email.trim() });
+					setStatus({
+						kind: "done",
+						email: values.email.trim().toLowerCase(),
+						roleLabel:
+							roles.find((r) => r.key === values.role_key)?.label ??
+							values.role_key,
+					});
 					form.reset();
 				} catch (e) {
 					setStatus({
@@ -177,13 +181,7 @@ function InviteForm({
 			})}
 		>
 			<Stack gap="md">
-				<div>
-					<Title order={2}>Add someone</Title>
-					<Text c="dimmed" size="sm" mt={4}>
-						They'll get access the first time they sign in with this email.
-						Nothing is sent from here; tell them to open the app.
-					</Text>
-				</div>
+				<Title order={2}>Add someone</Title>
 				<TextInput
 					label="Name"
 					placeholder="As they'd like to be greeted"
@@ -191,6 +189,7 @@ function InviteForm({
 				/>
 				<TextInput
 					label="Email"
+					description="They sign in with this. Nothing is sent from here."
 					type="email"
 					inputMode="email"
 					autoCapitalize="none"
@@ -207,9 +206,15 @@ function InviteForm({
 					Add to staff
 				</Button>
 				{status.kind === "done" ? (
-					<Alert color="pine" title="Added" role="status">
-						{status.email} can sign in now.
-					</Alert>
+					<>
+						<Alert color="pine" title="Added" role="status">
+							{status.email} can sign in now.
+						</Alert>
+						<InviteMessage email={status.email} roleLabel={status.roleLabel} />
+						<Button variant="subtle" size="md" onClick={onDone}>
+							Done
+						</Button>
+					</>
 				) : null}
 				{status.kind === "error" ? (
 					<Alert color="clay" title="Not added" role="alert">

@@ -382,3 +382,19 @@ Entries are appended at the bottom, newest last.
 - **WHY:** Made by the assistant, not yet ratified: the Role screen is a
   list of switches that an officer of the org has to read, and
   `family.write` is not a sentence. The cost is one line per capability.
+
+## Invitations are a copied message until there is an email service
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** admin
+- **SCOPE:** minor/local
+- **WHAT:** Adding a staff member creates the record only. The app offers a
+  "Copy invitation" message (where the app is, which email to use, no
+  password) for the inviter to send however they already reach the person.
+  A small outbound email service is wanted later and will replace this.
+- **WHY:** Nothing in the current architecture can send email: the module
+  is deterministic and secret-free, the admin app is static files, and
+  SpacetimeAuth only issues its magic link when the person asks for one on
+  the login page. Copy-paste costs nothing now; an email-sending Worker
+  would be the project's first server-side surface and its first secret in
+  a runtime, which is worth doing deliberately rather than for one invite.

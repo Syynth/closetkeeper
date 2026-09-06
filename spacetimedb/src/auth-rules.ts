@@ -132,8 +132,7 @@ export const SYSTEM_ROLES: readonly SystemRole[] = [
 	{
 		key: "volunteer",
 		label: "Volunteer",
-		description:
-			"Inventory and donation intake. Never family data (CLAUDE.md constraint 2).",
+		description: "Inventory and donation intake. Never family data.",
 		capabilities: OPERATIONS,
 	},
 ];

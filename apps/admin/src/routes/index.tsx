@@ -1,19 +1,19 @@
+import { tables } from "@closetkeeper/bindings";
 import {
 	Alert,
 	Button,
 	Card,
 	Container,
-	Group,
 	Stack,
 	Text,
 	Title,
 } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "react-oidc-context";
-import { useSpacetimeDB } from "spacetimedb/react";
-import { Shell, useMyStaff, Wordmark } from "../components/Shell";
+import { useSpacetimeDB, useTable } from "spacetimedb/react";
+import { ListGroup, ListRow } from "../components/ListRow";
+import { AuthedPage, useCan, useMyStaff } from "../components/Shell";
 import { SizeMarquee, SizeTag } from "../components/SizeTag";
-import { ConnectedToDatabase } from "../db";
 import classes from "./index.module.css";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -24,10 +24,7 @@ function Home() {
 	if (auth.isLoading) {
 		return (
 			<Container size="xs" className={classes.signIn}>
-				<Wordmark />
-				<Text c="dimmed" mt="md">
-					Loading…
-				</Text>
+				<Text c="dimmed">Loading…</Text>
 			</Container>
 		);
 	}
@@ -42,11 +39,9 @@ function Home() {
 	}
 
 	return (
-		<ConnectedToDatabase token={auth.user.id_token}>
-			<Shell>
-				<Standing email={auth.user.profile.email ?? null} />
-			</Shell>
-		</ConnectedToDatabase>
+		<AuthedPage>
+			<Dashboard />
+		</AuthedPage>
 	);
 }
 
@@ -82,64 +77,68 @@ function SignIn({
 	);
 }
 
-/** What the database thinks of the person in front of it. */
-function Standing({ email }: { email: string | null }) {
+/**
+ * The workbench. Until there is inventory to act on, it shows the closet's
+ * people, which is the state that exists. Nothing about the user beyond
+ * the role tag in the frame.
+ */
+function Dashboard() {
 	const db = useSpacetimeDB();
 	const { me, ready } = useMyStaff();
+	const can = useCan();
+	const [directory] = useTable(tables.staffDirectory);
+	const [roles] = useTable(tables.roleOptions);
 
 	if (!db.isActive) {
 		return (
 			<Text c="dimmed" aria-live="polite">
-				Connecting to the closet…
+				Connecting…
 			</Text>
 		);
 	}
-	if (!ready) {
-		return (
-			<Text c="dimmed" aria-live="polite">
-				Checking your access…
-			</Text>
-		);
-	}
+	if (!ready) return null;
 	if (!me) {
 		return (
 			<Card>
 				<Stack gap="sm">
 					<Title order={2}>This email isn't on the staff list yet</Title>
-					<Text>
-						You're signed in{email ? ` as ${email}` : ""}, but nobody has added
-						that address as staff or a volunteer. Ask a staff member to add it,
-						then sign in again.
-					</Text>
+					<Text>Ask a staff member to add it, then sign in again.</Text>
 				</Stack>
 			</Card>
 		);
 	}
+	if (!me.active) {
+		return (
+			<Card>
+				<Title order={2}>This account is deactivated</Title>
+			</Card>
+		);
+	}
+
+	const active = directory.filter((s) => s.active).length;
+	const notYet = directory.filter((s) => s.active && !s.hasSignedIn).length;
+
 	return (
 		<Stack gap="lg">
-			<div>
-				<Text c="dimmed" size="sm">
-					Signed in{email ? ` as ${email}` : ""}
-				</Text>
-				<Title order={2} mt={4}>
-					You're set up as <SizeTag tone="pine">{me.roleLabel}</SizeTag>
-					{me.active ? "" : " (deactivated)"}
-				</Title>
-			</div>
-			<Card>
-				<Text fw={600} mb="xs">
-					What this role can do
-				</Text>
-				<Group gap="xs">
-					{me.capabilities.map((c) => (
-						<SizeTag key={c} tone="muted">
-							{c}
-						</SizeTag>
-					))}
-				</Group>
-			</Card>
+			{can("staff.manage") ? (
+				<ListGroup label="People">
+					<ListRow
+						title="Staff & volunteers"
+						detail={notYet > 0 ? `${notYet} haven't signed in yet` : undefined}
+						right={<Text c="dimmed">{active}</Text>}
+						to="/staff"
+					/>
+					{can("role.manage") ? (
+						<ListRow
+							title="Roles"
+							right={<Text c="dimmed">{roles.length}</Text>}
+							to="/roles"
+						/>
+					) : null}
+				</ListGroup>
+			) : null}
 			<Text c="dimmed" size="sm">
-				Nothing else is built yet. Inventory, donations, and requests come next.
+				Inventory, donations, and requests aren't built yet.
 			</Text>
 		</Stack>
 	);
