@@ -22,3 +22,63 @@
 	max-width: 24rem;
 	color: var(--mantine-color-bark-7);
 }
+
+/* ---------- dashboard ---------- */
+
+.figure {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.1rem;
+	padding: 0.85rem 0.9rem;
+	border: 1px solid var(--mantine-color-bark-1);
+	border-radius: var(--mantine-radius-md);
+	background: var(--mantine-color-white);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.figure:disabled {
+	cursor: default;
+}
+
+.figureValue {
+	font-family: var(--mantine-font-family-headings);
+	font-weight: 700;
+	font-size: 1.9rem;
+	line-height: 1.1;
+	color: var(--mantine-color-bark-9);
+}
+
+.figureLabel {
+	font-size: 0.8rem;
+	color: var(--mantine-color-bark-5);
+}
+
+.gap {
+	display: inline-flex;
+	align-items: center;
+	min-height: 2.25rem;
+	padding: 0 0.7rem;
+	border: 0;
+	background: var(--mantine-color-clay-6);
+	color: var(--mantine-color-white);
+	font-family: var(--mantine-font-family-headings);
+	font-weight: 700;
+	font-size: 0.85rem;
+	cursor: pointer;
+	clip-path: polygon(
+		0 0,
+		calc(100% - 0.4rem) 0,
+		100% 0.4rem,
+		100% 100%,
+		0.3rem 100%,
+		0 calc(100% - 0.3rem)
+	);
+}
+
+.recent {
+	padding: 0.5rem 0.15rem;
+	border-bottom: 1px solid var(--mantine-color-bark-1);
+}

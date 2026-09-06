@@ -39,6 +39,7 @@ function More() {
 			</ListGroup>
 			{can("inventory.read") ? (
 				<ListGroup label="The closet">
+					<ListRow title="Export" detail="CSV for the books" to="/export" />
 					<ListRow
 						title="Bins & places"
 						detail="where things live"
