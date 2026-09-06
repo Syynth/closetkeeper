@@ -21,6 +21,10 @@ function More() {
 	const can = useCan();
 	const [directory] = useTable(tables.staffDirectory);
 	const [roles] = useTable(tables.roleOptions);
+	const [locations] = useTable(tables.locationOptions);
+	const [categories] = useTable(tables.categoryOptions);
+	const [conditions] = useTable(tables.conditionOptions);
+	const [genders] = useTable(tables.genderOptions);
 
 	return (
 		<>
@@ -33,6 +37,48 @@ function More() {
 				/>
 				<ListRow title="Sign out" onClick={() => void auth.signoutRedirect()} />
 			</ListGroup>
+			{can("inventory.read") ? (
+				<ListGroup label="The closet">
+					<ListRow
+						title="Bins & places"
+						detail="where things live"
+						right={
+							<Text c="dimmed">{locations.filter((l) => l.active).length}</Text>
+						}
+						to="/bins"
+					/>
+					{can("inventory.manage") ? (
+						<>
+							<ListRow
+								title="Categories"
+								detail="and the sizes each one uses"
+								right={
+									<Text c="dimmed">
+										{categories.filter((c) => c.active).length}
+									</Text>
+								}
+								to="/categories"
+							/>
+							<ListRow
+								title="Conditions"
+								detail={conditions
+									.filter((c) => c.active)
+									.map((c) => c.label)
+									.join(", ")}
+								to="/conditions"
+							/>
+							<ListRow
+								title="For"
+								detail={genders
+									.filter((g) => g.active)
+									.map((g) => g.label)
+									.join(", ")}
+								to="/genders"
+							/>
+						</>
+					) : null}
+				</ListGroup>
+			) : null}
 			{can("staff.manage") || can("role.manage") ? (
 				<ListGroup label="People">
 					{can("staff.manage") ? (

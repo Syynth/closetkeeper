@@ -1,4 +1,5 @@
 import { reducers, tables } from "@closetkeeper/bindings";
+import type { BinLevel } from "@closetkeeper/bindings/types";
 import {
 	Alert,
 	Button,
@@ -14,7 +15,7 @@ import { useState } from "react";
 import { useReducer, useTable } from "spacetimedb/react";
 import { PageHeader } from "../components/PageHeader";
 import { AuthedPage, useCan } from "../components/Shell";
-import { Empty } from "../components/Stock";
+import { Empty, Stepper } from "../components/Stock";
 import { useVocab } from "../inventory";
 
 export const Route = createFileRoute("/bins/$binId")({
@@ -30,6 +31,8 @@ function Bin() {
 	const id = BigInt(binId);
 	const vocab = useVocab();
 	const [levels] = useTable(tables.binLevels);
+	const [counting, setCounting] = useState(false);
+	const can = useCan();
 
 	if (!vocab.ready) return null;
 	const bin = vocab.locations.find((l) => l.locationId === id);
@@ -59,6 +62,18 @@ function Bin() {
 				right={<Text fw={700}>{total}</Text>}
 			/>
 			<Stack gap="lg">
+				{counting ? (
+					<CountBin
+						locationId={id}
+						contents={contents}
+						onDone={() => setCounting(false)}
+					/>
+				) : null}
+				{!counting && can("inventory.write") && contents.length > 0 ? (
+					<Button variant="outline" onClick={() => setCounting(true)}>
+						Count this bin
+					</Button>
+				) : null}
 				<BinForm
 					key={`${bin.label}:${bin.active}`}
 					locationId={bin.locationId}
@@ -87,7 +102,8 @@ function Bin() {
 					)}
 				</div>
 				<Text size="sm" c="dimmed">
-					Fix a number from the shelves: tap the size, then the bin.
+					Counting walks these one at a time. A single number can also be fixed
+					from the shelves: tap the size, then the bin.
 				</Text>
 			</Stack>
 		</>
@@ -152,6 +168,116 @@ function BinForm({
 				{saved ? <Alert color="pine" title="Saved" role="status" /> : null}
 				{error ? (
 					<Alert color="clay" title="Not saved" role="alert">
+						{error}
+					</Alert>
+				) : null}
+			</Stack>
+		</Card>
+	);
+}
+
+/**
+ * A physical recount, one line at a time. The person is holding the bin,
+ * not a keyboard: each line offers the number the app believes and a way to
+ * say otherwise, and only a disagreement writes anything.
+ */
+function CountBin({
+	locationId,
+	contents,
+	onDone,
+}: {
+	locationId: bigint;
+	contents: readonly BinLevel[];
+	onDone: () => void;
+}) {
+	const correct = useReducer(reducers.correctCount);
+	const [at, setAt] = useState(0);
+	const [count, setCount] = useState<number | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	const [busy, setBusy] = useState(false);
+	const [changed, setChanged] = useState(0);
+
+	const line = contents[at];
+	if (!line) {
+		return (
+			<Card>
+				<Stack gap="md">
+					<Text fw={700}>Counted.</Text>
+					<Text c="dimmed" size="sm">
+						{changed === 0
+							? "Every number matched."
+							: `${changed} ${changed === 1 ? "number" : "numbers"} corrected.`}
+					</Text>
+					<Button onClick={onDone}>Done</Button>
+				</Stack>
+			</Card>
+		);
+	}
+
+	const believed = line.onHand;
+	const saying = count ?? believed;
+
+	const next = () => {
+		setCount(null);
+		setError(null);
+		setAt((n) => n + 1);
+	};
+
+	return (
+		<Card>
+			<Stack gap="md">
+				<Text size="sm" c="dimmed">
+					{at + 1} of {contents.length}
+				</Text>
+				<Text fw={700} size="lg">
+					{line.categoryLabel} · {line.sizeLabel} · {line.genderLabel} ·{" "}
+					{line.conditionLabel}
+				</Text>
+				<Group gap="lg" align="center">
+					<div>
+						<Text size="xs" c="dimmed">
+							App says
+						</Text>
+						<Text fw={700} size="xl">
+							{believed}
+						</Text>
+					</div>
+					<Stepper value={saying} onChange={setCount} label="counted" />
+				</Group>
+				{saying === believed ? (
+					<Button variant="outline" onClick={next}>
+						That's right
+					</Button>
+				) : (
+					<Button
+						loading={busy}
+						onClick={async () => {
+							setBusy(true);
+							setError(null);
+							try {
+								await correct({
+									slotId: line.slotId,
+									locationId,
+									onHand: saying,
+									note: "counted the bin",
+								});
+								setChanged((n) => n + 1);
+								next();
+							} catch (e) {
+								setError(e instanceof Error ? e.message : String(e));
+							} finally {
+								setBusy(false);
+							}
+						}}
+					>
+						Set to {saying}
+					</Button>
+				)}
+				<Button variant="subtle" onClick={onDone}>
+					Stop counting
+				</Button>
+				{error ? (
+					<Alert color="clay" role="alert">
 						{error}
 					</Alert>
 				) : null}
