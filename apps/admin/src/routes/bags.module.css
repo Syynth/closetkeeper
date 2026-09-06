@@ -1,0 +1,92 @@
+.eyebrow {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--mantine-color-bark-5);
+}
+
+.wrap {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+/* Sizes are long lists in a fixed order; scrolling sideways keeps that
+   order intact where wrapping would scramble it into rows. */
+.strip {
+	display: flex;
+	gap: 0.5rem;
+	overflow-x: auto;
+	padding-bottom: 0.25rem;
+	scrollbar-width: none;
+}
+
+.strip::-webkit-scrollbar {
+	display: none;
+}
+
+.choice {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	min-height: 3rem;
+	padding: 0 1rem;
+	border: 0;
+	background: var(--mantine-color-tape-4);
+	color: var(--mantine-color-bark-9);
+	font-family: var(--mantine-font-family-headings);
+	font-weight: 700;
+	font-size: 1.05rem;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+	cursor: pointer;
+	clip-path: polygon(
+		0 0,
+		calc(100% - 0.45rem) 0,
+		100% 0.45rem,
+		100% 100%,
+		0.35rem 100%,
+		0 calc(100% - 0.35rem)
+	);
+}
+
+.choice[data-on] {
+	background: var(--mantine-color-pine-7);
+	color: var(--mantine-color-white);
+}
+
+.pick {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	width: 100%;
+	min-height: 3rem;
+	padding: 0 0.9rem;
+	border: 1.5px solid var(--mantine-color-bark-2);
+	border-radius: var(--mantine-radius-md);
+	background: var(--mantine-color-white);
+	font: inherit;
+	cursor: pointer;
+	text-align: left;
+}
+
+.pickLabel {
+	flex: none;
+	font-weight: 700;
+}
+
+.pick > :nth-child(2) {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lineTag {
+	border: 0;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}

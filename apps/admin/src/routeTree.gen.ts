@@ -15,8 +15,14 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as BagsIndexRouteImport } from './routes/bags.index'
+import { Route as BagsBagIdRouteImport } from './routes/bags.$bagId'
+import { Route as BinsIndexRouteImport } from './routes/bins.index'
+import { Route as BinsBinIdRouteImport } from './routes/bins.$binId'
 import { Route as RolesIndexRouteImport } from './routes/roles.index'
 import { Route as RolesRoleIdRouteImport } from './routes/roles.$roleId'
+import { Route as ShelvesIndexRouteImport } from './routes/shelves.index'
+import { Route as ShelvesCategoryIdRouteImport } from './routes/shelves.$categoryId'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as StaffStaffIdRouteImport } from './routes/staff.$staffId'
 
@@ -50,6 +56,26 @@ const WelcomeRoute = WelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BagsIndexRoute = BagsIndexRouteImport.update({
+  id: '/bags/',
+  path: '/bags/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BagsBagIdRoute = BagsBagIdRouteImport.update({
+  id: '/bags/$bagId',
+  path: '/bags/$bagId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BinsIndexRoute = BinsIndexRouteImport.update({
+  id: '/bins/',
+  path: '/bins/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BinsBinIdRoute = BinsBinIdRouteImport.update({
+  id: '/bins/$binId',
+  path: '/bins/$binId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
   id: '/roles/',
   path: '/roles/',
@@ -58,6 +84,16 @@ const RolesIndexRoute = RolesIndexRouteImport.update({
 const RolesRoleIdRoute = RolesRoleIdRouteImport.update({
   id: '/roles/$roleId',
   path: '/roles/$roleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShelvesIndexRoute = ShelvesIndexRouteImport.update({
+  id: '/shelves/',
+  path: '/shelves/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShelvesCategoryIdRoute = ShelvesCategoryIdRouteImport.update({
+  id: '/shelves/$categoryId',
+  path: '/shelves/$categoryId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffIndexRoute = StaffIndexRouteImport.update({
@@ -78,9 +114,15 @@ export interface FileRoutesByFullPath {
   '/callback': typeof CallbackRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
+  '/bags/$bagId': typeof BagsBagIdRoute
+  '/bins/$binId': typeof BinsBinIdRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
+  '/shelves/$categoryId': typeof ShelvesCategoryIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
+  '/bags/': typeof BagsIndexRoute
+  '/bins/': typeof BinsIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/shelves/': typeof ShelvesIndexRoute
   '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
@@ -90,9 +132,15 @@ export interface FileRoutesByTo {
   '/callback': typeof CallbackRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
+  '/bags/$bagId': typeof BagsBagIdRoute
+  '/bins/$binId': typeof BinsBinIdRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
+  '/shelves/$categoryId': typeof ShelvesCategoryIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
+  '/bags': typeof BagsIndexRoute
+  '/bins': typeof BinsIndexRoute
   '/roles': typeof RolesIndexRoute
+  '/shelves': typeof ShelvesIndexRoute
   '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
@@ -103,9 +151,15 @@ export interface FileRoutesById {
   '/callback': typeof CallbackRoute
   '/more': typeof MoreRoute
   '/welcome': typeof WelcomeRoute
+  '/bags/$bagId': typeof BagsBagIdRoute
+  '/bins/$binId': typeof BinsBinIdRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
+  '/shelves/$categoryId': typeof ShelvesCategoryIdRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
+  '/bags/': typeof BagsIndexRoute
+  '/bins/': typeof BinsIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/shelves/': typeof ShelvesIndexRoute
   '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
@@ -117,9 +171,15 @@ export interface FileRouteTypes {
     | '/callback'
     | '/more'
     | '/welcome'
+    | '/bags/$bagId'
+    | '/bins/$binId'
     | '/roles/$roleId'
+    | '/shelves/$categoryId'
     | '/staff/$staffId'
+    | '/bags/'
+    | '/bins/'
     | '/roles/'
+    | '/shelves/'
     | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -129,9 +189,15 @@ export interface FileRouteTypes {
     | '/callback'
     | '/more'
     | '/welcome'
+    | '/bags/$bagId'
+    | '/bins/$binId'
     | '/roles/$roleId'
+    | '/shelves/$categoryId'
     | '/staff/$staffId'
+    | '/bags'
+    | '/bins'
     | '/roles'
+    | '/shelves'
     | '/staff'
   id:
     | '__root__'
@@ -141,9 +207,15 @@ export interface FileRouteTypes {
     | '/callback'
     | '/more'
     | '/welcome'
+    | '/bags/$bagId'
+    | '/bins/$binId'
     | '/roles/$roleId'
+    | '/shelves/$categoryId'
     | '/staff/$staffId'
+    | '/bags/'
+    | '/bins/'
     | '/roles/'
+    | '/shelves/'
     | '/staff/'
   fileRoutesById: FileRoutesById
 }
@@ -154,9 +226,15 @@ export interface RootRouteChildren {
   CallbackRoute: typeof CallbackRoute
   MoreRoute: typeof MoreRoute
   WelcomeRoute: typeof WelcomeRoute
+  BagsBagIdRoute: typeof BagsBagIdRoute
+  BinsBinIdRoute: typeof BinsBinIdRoute
   RolesRoleIdRoute: typeof RolesRoleIdRoute
+  ShelvesCategoryIdRoute: typeof ShelvesCategoryIdRoute
   StaffStaffIdRoute: typeof StaffStaffIdRoute
+  BagsIndexRoute: typeof BagsIndexRoute
+  BinsIndexRoute: typeof BinsIndexRoute
   RolesIndexRoute: typeof RolesIndexRoute
+  ShelvesIndexRoute: typeof ShelvesIndexRoute
   StaffIndexRoute: typeof StaffIndexRoute
 }
 
@@ -204,6 +282,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WelcomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bags/': {
+      id: '/bags/'
+      path: '/bags'
+      fullPath: '/bags/'
+      preLoaderRoute: typeof BagsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bags/$bagId': {
+      id: '/bags/$bagId'
+      path: '/bags/$bagId'
+      fullPath: '/bags/$bagId'
+      preLoaderRoute: typeof BagsBagIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bins/': {
+      id: '/bins/'
+      path: '/bins'
+      fullPath: '/bins/'
+      preLoaderRoute: typeof BinsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bins/$binId': {
+      id: '/bins/$binId'
+      path: '/bins/$binId'
+      fullPath: '/bins/$binId'
+      preLoaderRoute: typeof BinsBinIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/roles/': {
       id: '/roles/'
       path: '/roles'
@@ -216,6 +322,20 @@ declare module '@tanstack/react-router' {
       path: '/roles/$roleId'
       fullPath: '/roles/$roleId'
       preLoaderRoute: typeof RolesRoleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shelves/': {
+      id: '/shelves/'
+      path: '/shelves'
+      fullPath: '/shelves/'
+      preLoaderRoute: typeof ShelvesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shelves/$categoryId': {
+      id: '/shelves/$categoryId'
+      path: '/shelves/$categoryId'
+      fullPath: '/shelves/$categoryId'
+      preLoaderRoute: typeof ShelvesCategoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/': {
@@ -242,9 +362,15 @@ const rootRouteChildren: RootRouteChildren = {
   CallbackRoute: CallbackRoute,
   MoreRoute: MoreRoute,
   WelcomeRoute: WelcomeRoute,
+  BagsBagIdRoute: BagsBagIdRoute,
+  BinsBinIdRoute: BinsBinIdRoute,
   RolesRoleIdRoute: RolesRoleIdRoute,
+  ShelvesCategoryIdRoute: ShelvesCategoryIdRoute,
   StaffStaffIdRoute: StaffStaffIdRoute,
+  BagsIndexRoute: BagsIndexRoute,
+  BinsIndexRoute: BinsIndexRoute,
   RolesIndexRoute: RolesIndexRoute,
+  ShelvesIndexRoute: ShelvesIndexRoute,
   StaffIndexRoute: StaffIndexRoute,
 }
 export const routeTree = rootRouteImport
