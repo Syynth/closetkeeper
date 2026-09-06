@@ -79,7 +79,8 @@ on the shelves. Reopening is not a thing: corrections go through
 ## Photos: not planned
 
 Camera-first intake (snap a bag, tag later) was designed and then dropped
-on 2026-09-05; see the decision log. Intake is the five-tap line entry.
+on 2026-09-05: photos of donations turned out to have no use downstream.
+Intake is the five-tap line entry.
 Nothing here needs an object store or a Worker with code, so the
 one-Worker-or-two decision stays deferred.
 
