@@ -159,7 +159,9 @@ export function Shell({ children }: { children: ReactNode }) {
 					</Link>
 					<RoleTag />
 				</header>
-				<main className={classes.main}>{children}</main>
+				<main className={classes.main} data-app-scroll>
+					{children}
+				</main>
 				<nav className={classes.tabbar} aria-label="Sections">
 					<Link to="/" className={classes.tab} activeOptions={{ exact: true }}>
 						<HomeIcon />

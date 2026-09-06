@@ -9,6 +9,14 @@
 html {
 	/* Slightly larger base than the browser default: read at arm's length. */
 	font-size: 17px;
+	/*
+	 * Rotating the phone must not rescale the type, and a pull past the top
+	 * or bottom must not bounce the whole document. The app is a fixed frame
+	 * with its own scrolling middle; the rubber band only ever made it feel
+	 * like something had come loose.
+	 */
+	-webkit-text-size-adjust: 100%;
+	overscroll-behavior: none;
 }
 
 body {
@@ -16,10 +24,27 @@ body {
 	background: var(--mantine-color-body);
 	color: var(--mantine-color-text);
 	-webkit-font-smoothing: antialiased;
+	overscroll-behavior: none;
+	/*
+	 * Every tap is a tap. Without this the browser waits to see whether a
+	 * second one is coming, which reads as the app hesitating.
+	 */
+	touch-action: manipulation;
+	/* Dragging a size tag should never select the label under a thumb. */
+	-webkit-tap-highlight-color: transparent;
 }
 
 /* Keyboard focus is always visible; the ring uses the working color. */
 :focus-visible {
 	outline: 3px solid var(--mantine-color-pine-5);
 	outline-offset: 2px;
+}
+
+/*
+ * Mantine locks scrolling on <body> while a drawer or modal is open, but
+ * the app's scroller is the main column, not the document. Without this the
+ * page behind an open sheet still slides under a thumb.
+ */
+body[data-scroll-locked] [data-app-scroll] {
+	overflow: hidden;
 }
