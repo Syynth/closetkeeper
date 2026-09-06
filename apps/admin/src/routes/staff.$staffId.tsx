@@ -13,6 +13,7 @@ import { useForm } from "@mantine/form";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useReducer, useTable } from "spacetimedb/react";
+import { InviteMessage } from "../components/InviteMessage";
 import { PageHeader } from "../components/PageHeader";
 import { AuthedPage, useCan, useMyStaff } from "../components/Shell";
 import { SizeTag } from "../components/SizeTag";
@@ -184,6 +185,9 @@ function PersonForm({ person }: { person: Entry }) {
 					>
 						Save
 					</Button>
+					{!person.hasSignedIn && person.email ? (
+						<InviteMessage email={person.email} roleLabel={person.roleLabel} />
+					) : null}
 					{status.kind === "saved" ? (
 						<Alert color="pine" title="Saved" role="status" />
 					) : null}
