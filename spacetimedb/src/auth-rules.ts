@@ -16,6 +16,7 @@ import type { JwtClaims } from "spacetimedb/server";
 export const CAPABILITIES = [
 	"inventory.read",
 	"inventory.write",
+	"inventory.manage",
 	"donation.read",
 	"donation.write",
 	"family.read",
@@ -39,6 +40,10 @@ export const CAPABILITY_INFO: Record<
 > = {
 	"inventory.read": { group: "Inventory", label: "See the shelves" },
 	"inventory.write": { group: "Inventory", label: "Log and adjust inventory" },
+	"inventory.manage": {
+		group: "Inventory",
+		label: "Edit categories, sizes, and conditions",
+	},
 	"donation.read": { group: "Donations", label: "See donations" },
 	"donation.write": { group: "Donations", label: "Log donations" },
 	"family.read": { group: "Families", label: "See requests and families" },
@@ -92,6 +97,8 @@ const OPERATIONS: readonly Capability[] = [
 	"donation.write",
 ];
 const FAMILY: readonly Capability[] = ["family.read", "family.write"];
+/** Reshaping the vocabularies is staff work, not a volunteer's. */
+const VOCABULARY: readonly Capability[] = ["inventory.manage"];
 
 export const SYSTEM_ROLES: readonly SystemRole[] = [
 	{
@@ -106,21 +113,21 @@ export const SYSTEM_ROLES: readonly SystemRole[] = [
 		label: "President",
 		description:
 			"The organization's top officer. Same access as staff; system access stays with the system administrator.",
-		capabilities: [...OPERATIONS, ...FAMILY, "staff.manage"],
+		capabilities: [...OPERATIONS, ...VOCABULARY, ...FAMILY, "staff.manage"],
 	},
 	{
 		key: "staff",
 		label: "Staff",
 		description:
 			"General staff: inventory, donations, families, and staff management.",
-		capabilities: [...OPERATIONS, ...FAMILY, "staff.manage"],
+		capabilities: [...OPERATIONS, ...VOCABULARY, ...FAMILY, "staff.manage"],
 	},
 	{
 		key: "secretary",
 		label: "Secretary",
 		description:
 			"Records and appointments: inventory, donations, families, and staff management.",
-		capabilities: [...OPERATIONS, ...FAMILY, "staff.manage"],
+		capabilities: [...OPERATIONS, ...VOCABULARY, ...FAMILY, "staff.manage"],
 	},
 	{
 		key: "treasurer",

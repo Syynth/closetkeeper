@@ -73,6 +73,158 @@ export const AuthProviderLink = __t.object("AuthProviderLink", {
 });
 export type AuthProviderLink = __Infer<typeof AuthProviderLink>;
 
+export const Bag = __t.object("Bag", {
+  id: __t.u64(),
+  kind: __t.string(),
+  status: __t.string(),
+  openedAt: __t.timestamp(),
+  openedBy: __t.u64(),
+  closedAt: __t.timestamp(),
+  closedBy: __t.u64(),
+  donorPersonId: __t.u64(),
+  note: __t.string(),
+});
+export type Bag = __Infer<typeof Bag>;
+
+export const BagLine = __t.object("BagLine", {
+  id: __t.u64(),
+  bagId: __t.u64(),
+  slotId: __t.u64(),
+  count: __t.u32(),
+  createdAt: __t.timestamp(),
+  createdBy: __t.u64(),
+});
+export type BagLine = __Infer<typeof BagLine>;
+
+export const BagLineEntry = __t.object("BagLineEntry", {
+  lineId: __t.u64(),
+  bagId: __t.u64(),
+  slotId: __t.u64(),
+  categoryLabel: __t.string(),
+  sizeLabel: __t.string(),
+  genderLabel: __t.string(),
+  conditionLabel: __t.string(),
+  count: __t.u32(),
+  createdAt: __t.timestamp(),
+});
+export type BagLineEntry = __Infer<typeof BagLineEntry>;
+
+export const BagLines = __t.object("BagLines", {});
+export type BagLines = __Infer<typeof BagLines>;
+
+export const BagList = __t.object("BagList", {});
+export type BagList = __Infer<typeof BagList>;
+
+export const BagSummary = __t.object("BagSummary", {
+  bagId: __t.u64(),
+  kind: __t.string(),
+  status: __t.string(),
+  openedAt: __t.timestamp(),
+  openedByName: __t.string(),
+  closedAt: __t.timestamp(),
+  lineCount: __t.u32(),
+  itemCount: __t.u32(),
+  note: __t.string(),
+});
+export type BagSummary = __Infer<typeof BagSummary>;
+
+export const Category = __t.object("Category", {
+  id: __t.u64(),
+  label: __t.string(),
+  scaleId: __t.u64(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type Category = __Infer<typeof Category>;
+
+export const CategoryOption = __t.object("CategoryOption", {
+  categoryId: __t.u64(),
+  label: __t.string(),
+  scaleId: __t.u64(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type CategoryOption = __Infer<typeof CategoryOption>;
+
+export const CategoryOptions = __t.object("CategoryOptions", {});
+export type CategoryOptions = __Infer<typeof CategoryOptions>;
+
+export const Condition = __t.object("Condition", {
+  id: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+  shelved: __t.bool(),
+});
+export type Condition = __Infer<typeof Condition>;
+
+export const ConditionOption = __t.object("ConditionOption", {
+  conditionId: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+  shelved: __t.bool(),
+});
+export type ConditionOption = __Infer<typeof ConditionOption>;
+
+export const ConditionOptions = __t.object("ConditionOptions", {});
+export type ConditionOptions = __Infer<typeof ConditionOptions>;
+
+export const Gender = __t.object("Gender", {
+  id: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type Gender = __Infer<typeof Gender>;
+
+export const GenderOption = __t.object("GenderOption", {
+  genderId: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type GenderOption = __Infer<typeof GenderOption>;
+
+export const GenderOptions = __t.object("GenderOptions", {});
+export type GenderOptions = __Infer<typeof GenderOptions>;
+
+export const LedgerEntry = __t.object("LedgerEntry", {
+  movementId: __t.u64(),
+  at: __t.timestamp(),
+  slotId: __t.u64(),
+  categoryLabel: __t.string(),
+  sizeLabel: __t.string(),
+  genderLabel: __t.string(),
+  conditionLabel: __t.string(),
+  delta: __t.i32(),
+  kind: __t.string(),
+  staffName: __t.string(),
+  bagLineId: __t.u64(),
+  note: __t.string(),
+});
+export type LedgerEntry = __Infer<typeof LedgerEntry>;
+
+export const Location = __t.object("Location", {
+  id: __t.u64(),
+  label: __t.string(),
+  labelCode: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type Location = __Infer<typeof Location>;
+
+export const LocationOption = __t.object("LocationOption", {
+  locationId: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type LocationOption = __Infer<typeof LocationOption>;
+
+export const LocationOptions = __t.object("LocationOptions", {});
+export type LocationOptions = __Infer<typeof LocationOptions>;
+
 export const LoginEntry = __t.object("LoginEntry", {
   linkId: __t.u64(),
   label: __t.string(),
@@ -148,6 +300,45 @@ export type RoleOption = __Infer<typeof RoleOption>;
 export const RoleOptions = __t.object("RoleOptions", {});
 export type RoleOptions = __Infer<typeof RoleOptions>;
 
+export const Scale = __t.object("Scale", {
+  id: __t.u64(),
+  key: __t.string(),
+  label: __t.string(),
+});
+export type Scale = __Infer<typeof Scale>;
+
+export const ScaleOption = __t.object("ScaleOption", {
+  scaleId: __t.u64(),
+  key: __t.string(),
+  label: __t.string(),
+});
+export type ScaleOption = __Infer<typeof ScaleOption>;
+
+export const ScaleOptions = __t.object("ScaleOptions", {});
+export type ScaleOptions = __Infer<typeof ScaleOptions>;
+
+export const ShelfCell = __t.object("ShelfCell", {
+  slotId: __t.u64(),
+  categoryId: __t.u64(),
+  sizeId: __t.u64(),
+  genderId: __t.u64(),
+  conditionId: __t.u64(),
+  categoryLabel: __t.string(),
+  sizeLabel: __t.string(),
+  genderLabel: __t.string(),
+  conditionLabel: __t.string(),
+  categorySort: __t.u32(),
+  sizeSort: __t.u32(),
+  genderSort: __t.u32(),
+  conditionSort: __t.u32(),
+  shelved: __t.bool(),
+  onHand: __t.i32(),
+});
+export type ShelfCell = __Infer<typeof ShelfCell>;
+
+export const Shelves = __t.object("Shelves", {});
+export type Shelves = __Infer<typeof Shelves>;
+
 export const SignInEntry = __t.object("SignInEntry", {
   eventId: __t.u64(),
   at: __t.timestamp(),
@@ -155,6 +346,37 @@ export const SignInEntry = __t.object("SignInEntry", {
   outcome: __t.string(),
 });
 export type SignInEntry = __Infer<typeof SignInEntry>;
+
+export const Size = __t.object("Size", {
+  id: __t.u64(),
+  scaleId: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type Size = __Infer<typeof Size>;
+
+export const SizeOption = __t.object("SizeOption", {
+  sizeId: __t.u64(),
+  scaleId: __t.u64(),
+  label: __t.string(),
+  sortOrder: __t.u32(),
+  active: __t.bool(),
+});
+export type SizeOption = __Infer<typeof SizeOption>;
+
+export const SizeOptions = __t.object("SizeOptions", {});
+export type SizeOptions = __Infer<typeof SizeOptions>;
+
+export const Slot = __t.object("Slot", {
+  id: __t.u64(),
+  key: __t.string(),
+  categoryId: __t.u64(),
+  sizeId: __t.u64(),
+  genderId: __t.u64(),
+  conditionId: __t.u64(),
+});
+export type Slot = __Infer<typeof Slot>;
 
 export const StaffDirectory = __t.object("StaffDirectory", {});
 export type StaffDirectory = __Infer<typeof StaffDirectory>;
@@ -198,4 +420,26 @@ export const StaffStanding = __t.object("StaffStanding", {
   welcomed: __t.bool(),
 });
 export type StaffStanding = __Infer<typeof StaffStanding>;
+
+export const StockLedger = __t.object("StockLedger", {});
+export type StockLedger = __Infer<typeof StockLedger>;
+
+export const StockLevel = __t.object("StockLevel", {
+  slotId: __t.u64(),
+  onHand: __t.i32(),
+});
+export type StockLevel = __Infer<typeof StockLevel>;
+
+export const StockMovement = __t.object("StockMovement", {
+  id: __t.u64(),
+  slotId: __t.u64(),
+  delta: __t.i32(),
+  kind: __t.string(),
+  at: __t.timestamp(),
+  staffId: __t.u64(),
+  bagLineId: __t.u64(),
+  itemId: __t.u64(),
+  note: __t.string(),
+});
+export type StockMovement = __Infer<typeof StockMovement>;
 
