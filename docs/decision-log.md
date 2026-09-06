@@ -449,11 +449,9 @@ Entries are appended at the bottom, newest last.
 - **SYSTEM:** inventory
 - **SCOPE:** moderate
 - **WHAT:** Intake is recorded as a bag (a donation or purchase session)
-  with lines, from day one. A bag can be opened, photographed, and closed
-  with no lines, and tagged later.
+  with lines, from day one.
 - **WHY:** A donor receipt lists what one donor gave, so the bag is that
-  unit; and the snap-now-tag-later flow needs a container for untagged
-  photos to live in.
+  unit.
 
 ## Mobile app and NFC stickers as the scanning path
 - **WHEN:** 2026-09-05
