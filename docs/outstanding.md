@@ -66,12 +66,14 @@ Roughly in the order they are worth doing.
 
 ## Broken, worked around
 
-- **Magic-link emails do not arrive.** SpacetimeAuth accepts the request
-  (`201`, the page polls) and no email is delivered, for any address except
-  the maintainer's, which received them earlier the same day. Google sign-in
-  was enabled and is what everyone uses. Nothing has been reported to the
-  SpacetimeDB Discord yet; the interaction id from a failed attempt is what
-  they would need.
+- **Magic-link emails arrive about half an hour late.** SpacetimeAuth accepts
+  the request (`201`, the page polls) and the email does land — one took
+  roughly thirty minutes, long after it was written off as never sent. This
+  was first read as non-delivery and is really delivery nobody waits for.
+  Google sign-in was enabled and is still what to offer when inviting
+  somebody. Unknown, and worth knowing before anyone relies on the link:
+  whether it is still valid when it finally arrives. Nothing has been
+  reported to the SpacetimeDB Discord.
 - **The dev database has been hand-patched twice**, because `init` runs once
   per database and later seeds never reached it: the `system_admin` role key
   after the rename, and the `access.read` and `inventory.manage` capabilities
