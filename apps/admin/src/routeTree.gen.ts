@@ -10,12 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccessRouteImport } from './routes/access'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as CallbackRouteImport } from './routes/callback'
-import { Route as StaffRouteImport } from './routes/staff'
+import { Route as MoreRouteImport } from './routes/more'
+import { Route as RolesIndexRouteImport } from './routes/roles.index'
+import { Route as RolesRoleIdRouteImport } from './routes/roles.$roleId'
+import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffStaffIdRouteImport } from './routes/staff.$staffId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessRoute = AccessRouteImport.update({
+  id: '/access',
+  path: '/access',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CallbackRoute = CallbackRouteImport.update({
@@ -23,40 +39,112 @@ const CallbackRoute = CallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StaffRoute = StaffRouteImport.update({
-  id: '/staff',
-  path: '/staff',
+const MoreRoute = MoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesIndexRoute = RolesIndexRouteImport.update({
+  id: '/roles/',
+  path: '/roles/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesRoleIdRoute = RolesRoleIdRouteImport.update({
+  id: '/roles/$roleId',
+  path: '/roles/$roleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/staff/',
+  path: '/staff/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffStaffIdRoute = StaffStaffIdRouteImport.update({
+  id: '/staff/$staffId',
+  path: '/staff/$staffId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/access': typeof AccessRoute
+  '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
-  '/staff': typeof StaffRoute
+  '/more': typeof MoreRoute
+  '/roles/$roleId': typeof RolesRoleIdRoute
+  '/staff/$staffId': typeof StaffStaffIdRoute
+  '/roles/': typeof RolesIndexRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/access': typeof AccessRoute
+  '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
-  '/staff': typeof StaffRoute
+  '/more': typeof MoreRoute
+  '/roles/$roleId': typeof RolesRoleIdRoute
+  '/staff/$staffId': typeof StaffStaffIdRoute
+  '/roles': typeof RolesIndexRoute
+  '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/access': typeof AccessRoute
+  '/account': typeof AccountRoute
   '/callback': typeof CallbackRoute
-  '/staff': typeof StaffRoute
+  '/more': typeof MoreRoute
+  '/roles/$roleId': typeof RolesRoleIdRoute
+  '/staff/$staffId': typeof StaffStaffIdRoute
+  '/roles/': typeof RolesIndexRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/callback' | '/staff'
+  fullPaths:
+    | '/'
+    | '/access'
+    | '/account'
+    | '/callback'
+    | '/more'
+    | '/roles/$roleId'
+    | '/staff/$staffId'
+    | '/roles/'
+    | '/staff/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/callback' | '/staff'
-  id: '__root__' | '/' | '/callback' | '/staff'
+  to:
+    | '/'
+    | '/access'
+    | '/account'
+    | '/callback'
+    | '/more'
+    | '/roles/$roleId'
+    | '/staff/$staffId'
+    | '/roles'
+    | '/staff'
+  id:
+    | '__root__'
+    | '/'
+    | '/access'
+    | '/account'
+    | '/callback'
+    | '/more'
+    | '/roles/$roleId'
+    | '/staff/$staffId'
+    | '/roles/'
+    | '/staff/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccessRoute: typeof AccessRoute
+  AccountRoute: typeof AccountRoute
   CallbackRoute: typeof CallbackRoute
-  StaffRoute: typeof StaffRoute
+  MoreRoute: typeof MoreRoute
+  RolesRoleIdRoute: typeof RolesRoleIdRoute
+  StaffStaffIdRoute: typeof StaffStaffIdRoute
+  RolesIndexRoute: typeof RolesIndexRoute
+  StaffIndexRoute: typeof StaffIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,6 +156,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/access': {
+      id: '/access'
+      path: '/access'
+      fullPath: '/access'
+      preLoaderRoute: typeof AccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/callback': {
       id: '/callback'
       path: '/callback'
@@ -75,11 +177,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/staff': {
-      id: '/staff'
+    '/more': {
+      id: '/more'
+      path: '/more'
+      fullPath: '/more'
+      preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles/': {
+      id: '/roles/'
+      path: '/roles'
+      fullPath: '/roles/'
+      preLoaderRoute: typeof RolesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles/$roleId': {
+      id: '/roles/$roleId'
+      path: '/roles/$roleId'
+      fullPath: '/roles/$roleId'
+      preLoaderRoute: typeof RolesRoleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/': {
+      id: '/staff/'
       path: '/staff'
-      fullPath: '/staff'
-      preLoaderRoute: typeof StaffRouteImport
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/$staffId': {
+      id: '/staff/$staffId'
+      path: '/staff/$staffId'
+      fullPath: '/staff/$staffId'
+      preLoaderRoute: typeof StaffStaffIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -87,8 +217,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccessRoute: AccessRoute,
+  AccountRoute: AccountRoute,
   CallbackRoute: CallbackRoute,
-  StaffRoute: StaffRoute,
+  MoreRoute: MoreRoute,
+  RolesRoleIdRoute: RolesRoleIdRoute,
+  StaffStaffIdRoute: StaffStaffIdRoute,
+  RolesIndexRoute: RolesIndexRoute,
+  StaffIndexRoute: StaffIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
