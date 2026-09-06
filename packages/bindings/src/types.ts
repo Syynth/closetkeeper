@@ -28,6 +28,29 @@ export const AccessEventPurgeSchedule = __t.object("AccessEventPurgeSchedule", {
 });
 export type AccessEventPurgeSchedule = __Infer<typeof AccessEventPurgeSchedule>;
 
+export const AccessLog = __t.object("AccessLog", {});
+export type AccessLog = __Infer<typeof AccessLog>;
+
+export const AccessLogEntry = __t.object("AccessLogEntry", {
+  eventId: __t.u64(),
+  at: __t.timestamp(),
+  identityHex: __t.string(),
+  issuer: __t.string(),
+  email: __t.string(),
+  outcome: __t.string(),
+  displayName: __t.string(),
+});
+export type AccessLogEntry = __Infer<typeof AccessLogEntry>;
+
+export const AccountDetails = __t.object("AccountDetails", {
+  personId: __t.u64(),
+  displayName: __t.string(),
+  email: __t.string(),
+  roleKey: __t.string(),
+  roleLabel: __t.string(),
+});
+export type AccountDetails = __Infer<typeof AccountDetails>;
+
 export const AuditEvent = __t.object("AuditEvent", {
   id: __t.u64(),
   at: __t.timestamp(),
@@ -49,6 +72,24 @@ export const AuthProviderLink = __t.object("AuthProviderLink", {
   lastSeenAt: __t.timestamp(),
 });
 export type AuthProviderLink = __Infer<typeof AuthProviderLink>;
+
+export const LoginEntry = __t.object("LoginEntry", {
+  linkId: __t.u64(),
+  label: __t.string(),
+  createdAt: __t.timestamp(),
+  lastSeenAt: __t.timestamp(),
+  current: __t.bool(),
+});
+export type LoginEntry = __Infer<typeof LoginEntry>;
+
+export const MyAccount = __t.object("MyAccount", {});
+export type MyAccount = __Infer<typeof MyAccount>;
+
+export const MyLogins = __t.object("MyLogins", {});
+export type MyLogins = __Infer<typeof MyLogins>;
+
+export const MyRecentSignIns = __t.object("MyRecentSignIns", {});
+export type MyRecentSignIns = __Infer<typeof MyRecentSignIns>;
 
 export const MyStaff = __t.object("MyStaff", {});
 export type MyStaff = __Infer<typeof MyStaff>;
@@ -79,6 +120,20 @@ export const RoleCapability = __t.object("RoleCapability", {
 });
 export type RoleCapability = __Infer<typeof RoleCapability>;
 
+export const RoleCapabilityCell = __t.object("RoleCapabilityCell", {
+  key: __t.string(),
+  roleId: __t.u64(),
+  capability: __t.string(),
+  group: __t.string(),
+  label: __t.string(),
+  protected: __t.bool(),
+  granted: __t.bool(),
+});
+export type RoleCapabilityCell = __Infer<typeof RoleCapabilityCell>;
+
+export const RoleCapabilityMatrix = __t.object("RoleCapabilityMatrix", {});
+export type RoleCapabilityMatrix = __Infer<typeof RoleCapabilityMatrix>;
+
 export const RoleOption = __t.object("RoleOption", {
   roleId: __t.u64(),
   key: __t.string(),
@@ -86,11 +141,20 @@ export const RoleOption = __t.object("RoleOption", {
   description: __t.string(),
   system: __t.bool(),
   protected: __t.bool(),
+  holders: __t.u32(),
 });
 export type RoleOption = __Infer<typeof RoleOption>;
 
 export const RoleOptions = __t.object("RoleOptions", {});
 export type RoleOptions = __Infer<typeof RoleOptions>;
+
+export const SignInEntry = __t.object("SignInEntry", {
+  eventId: __t.u64(),
+  at: __t.timestamp(),
+  loginLabel: __t.string(),
+  outcome: __t.string(),
+});
+export type SignInEntry = __Infer<typeof SignInEntry>;
 
 export const StaffDirectory = __t.object("StaffDirectory", {});
 export type StaffDirectory = __Infer<typeof StaffDirectory>;
@@ -104,6 +168,8 @@ export const StaffDirectoryEntry = __t.object("StaffDirectoryEntry", {
   roleLabel: __t.string(),
   active: __t.bool(),
   invitedAt: __t.timestamp(),
+  hasSignedIn: __t.bool(),
+  lastSeenAt: __t.timestamp(),
 });
 export type StaffDirectoryEntry = __Infer<typeof StaffDirectoryEntry>;
 

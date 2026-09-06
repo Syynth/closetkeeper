@@ -24,8 +24,34 @@ export const CAPABILITIES = [
 	"staff.manage",
 	"staff.manage_sensitive",
 	"role.manage",
+	"access.read",
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
+
+/**
+ * How each capability is shown to people. Plain English, grouped the way a
+ * staff member thinks about the closet, not the way the code is organized.
+ * Every capability must appear here; a test enforces it.
+ */
+export const CAPABILITY_INFO: Record<
+	Capability,
+	{ group: string; label: string }
+> = {
+	"inventory.read": { group: "Inventory", label: "See the shelves" },
+	"inventory.write": { group: "Inventory", label: "Log and adjust inventory" },
+	"donation.read": { group: "Donations", label: "See donations" },
+	"donation.write": { group: "Donations", label: "Log donations" },
+	"family.read": { group: "Families", label: "See requests and families" },
+	"family.write": { group: "Families", label: "Edit requests and families" },
+	"financial.read": { group: "Books", label: "See financial records" },
+	"staff.manage": { group: "Access", label: "Manage staff and volunteers" },
+	"staff.manage_sensitive": {
+		group: "Access",
+		label: "Grant protected access",
+	},
+	"role.manage": { group: "Access", label: "Manage roles" },
+	"access.read": { group: "Access", label: "See the access log" },
+};
 
 export function isCapability(value: string): value is Capability {
 	return (CAPABILITIES as readonly string[]).includes(value);
@@ -42,6 +68,8 @@ export const PROTECTED_CAPABILITIES: readonly Capability[] = [
 	"family.write",
 	"role.manage",
 	"staff.manage_sensitive",
+	// The access log carries emails of people who are not staff.
+	"access.read",
 ];
 
 export function isProtected(capability: Capability): boolean {
@@ -112,6 +140,17 @@ export const SYSTEM_ROLES: readonly SystemRole[] = [
 
 /** The role the publisher and the bootstrap email receive. */
 export const BOOTSTRAP_ROLE_KEY = "system_admin";
+
+/** How a login row is described to its owner, from the token issuer that created it. */
+export function describeLogin(issuer: string, trustedIssuer: string): string {
+	if (issuer === "") return "Publisher key";
+	if (issuer === trustedIssuer) return "Sign-in link";
+	try {
+		return new URL(issuer).host;
+	} catch {
+		return issuer;
+	}
+}
 
 /** Role keys are stable machine names: lowercase, digits, underscores. */
 export function isValidRoleKey(key: string): boolean {

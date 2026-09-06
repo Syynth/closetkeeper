@@ -10,17 +10,23 @@ import CreateRoleReducer from "../create_role_reducer";
 import DeleteRoleReducer from "../delete_role_reducer";
 import GrantCapabilityReducer from "../grant_capability_reducer";
 import InviteStaffReducer from "../invite_staff_reducer";
+import RemoveMyLoginReducer from "../remove_my_login_reducer";
 import RevokeCapabilityReducer from "../revoke_capability_reducer";
 import SetStaffActiveReducer from "../set_staff_active_reducer";
+import SetStaffPersonReducer from "../set_staff_person_reducer";
 import SetStaffRoleReducer from "../set_staff_role_reducer";
+import UpdateMyNameReducer from "../update_my_name_reducer";
 import UpdateRoleReducer from "../update_role_reducer";
 
 export type CreateRoleParams = __Infer<typeof CreateRoleReducer>;
 export type DeleteRoleParams = __Infer<typeof DeleteRoleReducer>;
 export type GrantCapabilityParams = __Infer<typeof GrantCapabilityReducer>;
 export type InviteStaffParams = __Infer<typeof InviteStaffReducer>;
+export type RemoveMyLoginParams = __Infer<typeof RemoveMyLoginReducer>;
 export type RevokeCapabilityParams = __Infer<typeof RevokeCapabilityReducer>;
 export type SetStaffActiveParams = __Infer<typeof SetStaffActiveReducer>;
+export type SetStaffPersonParams = __Infer<typeof SetStaffPersonReducer>;
 export type SetStaffRoleParams = __Infer<typeof SetStaffRoleReducer>;
+export type UpdateMyNameParams = __Infer<typeof UpdateMyNameReducer>;
 export type UpdateRoleParams = __Infer<typeof UpdateRoleReducer>;
 

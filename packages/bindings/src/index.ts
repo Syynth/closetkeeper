@@ -38,15 +38,23 @@ import CreateRoleReducer from "./create_role_reducer";
 import DeleteRoleReducer from "./delete_role_reducer";
 import GrantCapabilityReducer from "./grant_capability_reducer";
 import InviteStaffReducer from "./invite_staff_reducer";
+import RemoveMyLoginReducer from "./remove_my_login_reducer";
 import RevokeCapabilityReducer from "./revoke_capability_reducer";
 import SetStaffActiveReducer from "./set_staff_active_reducer";
+import SetStaffPersonReducer from "./set_staff_person_reducer";
 import SetStaffRoleReducer from "./set_staff_role_reducer";
+import UpdateMyNameReducer from "./update_my_name_reducer";
 import UpdateRoleReducer from "./update_role_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import AccessLogRow from "./access_log_table";
+import MyAccountRow from "./my_account_table";
+import MyLoginsRow from "./my_logins_table";
+import MyRecentSignInsRow from "./my_recent_sign_ins_table";
 import MyStaffRow from "./my_staff_table";
+import RoleCapabilityMatrixRow from "./role_capability_matrix_table";
 import RoleOptionsRow from "./role_options_table";
 import StaffDirectoryRow from "./staff_directory_table";
 
@@ -54,6 +62,34 @@ import StaffDirectoryRow from "./staff_directory_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  accessLog: __table({
+    name: 'access_log',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, AccessLogRow),
+  myAccount: __table({
+    name: 'my_account',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyAccountRow),
+  myLogins: __table({
+    name: 'my_logins',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyLoginsRow),
+  myRecentSignIns: __table({
+    name: 'my_recent_sign_ins',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyRecentSignInsRow),
   myStaff: __table({
     name: 'my_staff',
     indexes: [
@@ -61,6 +97,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyStaffRow),
+  roleCapabilityMatrix: __table({
+    name: 'role_capability_matrix',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, RoleCapabilityMatrixRow),
   roleOptions: __table({
     name: 'role_options',
     indexes: [
@@ -83,9 +126,12 @@ const reducersSchema = __reducers(
   __reducerSchema("delete_role", DeleteRoleReducer),
   __reducerSchema("grant_capability", GrantCapabilityReducer),
   __reducerSchema("invite_staff", InviteStaffReducer),
+  __reducerSchema("remove_my_login", RemoveMyLoginReducer),
   __reducerSchema("revoke_capability", RevokeCapabilityReducer),
   __reducerSchema("set_staff_active", SetStaffActiveReducer),
+  __reducerSchema("set_staff_person", SetStaffPersonReducer),
   __reducerSchema("set_staff_role", SetStaffRoleReducer),
+  __reducerSchema("update_my_name", UpdateMyNameReducer),
   __reducerSchema("update_role", UpdateRoleReducer),
 );
 

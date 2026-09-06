@@ -89,6 +89,17 @@ export function requireStaff(ctx: Ctx, capability: Capability): StaffContext {
 	return staff;
 }
 
+/** Resolve the caller to any active staff member, or throw. For account screens. */
+export function requireAnyStaff(ctx: Ctx): StaffContext {
+	const staff = resolveStaff(ctx);
+	if (staff === null) {
+		throw new SenderError(
+			"not authorized: caller is not an active staff member",
+		);
+	}
+	return staff;
+}
+
 /** Throw unless `staff` may place someone into, or extend, a role holding protected capabilities. */
 export function requireSensitiveIfProtected(
 	ctx: Ctx,

@@ -138,6 +138,29 @@ export function call(
 	}
 }
 
+/** Like `sql`, but optionally as a fresh anonymous identity, to prove a view's gating. */
+export function sqlAs<Row = Record<string, unknown>>(
+	database: string,
+	query: string,
+	opts: { anonymous?: boolean } = {},
+): Row[] {
+	const raw = spacetime(
+		[
+			"sql",
+			database,
+			"--server",
+			LOCAL_SERVER,
+			...(opts.anonymous ? ["--anonymous"] : []),
+			"--format",
+			"json",
+			query,
+		],
+		{ json: true },
+	);
+	const [first] = JSON.parse(raw) as Array<{ rows: Row[] }>;
+	return first?.rows ?? [];
+}
+
 /** Ping the local instance; throws with a readable message if it is not up. */
 export async function assertLocalInstance(): Promise<void> {
 	try {

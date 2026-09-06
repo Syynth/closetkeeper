@@ -20,7 +20,12 @@ import {
 	SenderError,
 	type TypeBuilder,
 } from "spacetimedb/server";
-import { type Ctx, requireStaff, type StaffContext } from "./auth";
+import {
+	type Ctx,
+	requireAnyStaff,
+	requireStaff,
+	type StaffContext,
+} from "./auth";
 import { auditDetails, type Capability } from "./auth-rules";
 import spacetimedb from "./schema";
 
@@ -39,8 +44,11 @@ export interface AuditTarget {
 export interface AdminReducerOpts<P extends ParamsObj> {
 	/** The reducer's database name, snake_case. Also the audit `action`. */
 	name: string;
-	/** The capability the caller must hold. */
-	capability: Capability;
+	/**
+	 * The capability the caller must hold, or "any-staff" for reducers that
+	 * act only on the caller's own account and need no particular capability.
+	 */
+	capability: Capability | "any-staff";
 	args: P;
 	/** Argument names that must not reach the audit log (emails, names, ...). */
 	redact?: readonly (keyof P & string)[];
@@ -63,7 +71,10 @@ export function defineAdminReducer<P extends ParamsObj>(
 	return spacetimedb.reducer({ name: opts.name }, opts.args, (ctx, rawArgs) => {
 		let staff: StaffContext;
 		try {
-			staff = requireStaff(ctx, opts.capability);
+			staff =
+				opts.capability === "any-staff"
+					? requireAnyStaff(ctx)
+					: requireStaff(ctx, opts.capability);
 		} catch (e) {
 			console.warn(`[denied] ${opts.name}: ${message(e)}`);
 			throw e;

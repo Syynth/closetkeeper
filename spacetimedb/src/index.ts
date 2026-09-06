@@ -1,8 +1,10 @@
+import { Timestamp } from "spacetimedb";
 import { SenderError, t } from "spacetimedb/server";
 import { defineAdminReducer } from "./admin-reducer";
 import {
 	type Ctx,
 	noteConnection,
+	type ReadCtx,
 	requireSensitiveIfProtected,
 	resolveStaff,
 	roleCapabilities,
@@ -11,6 +13,9 @@ import {
 } from "./auth";
 import {
 	BOOTSTRAP_ROLE_KEY,
+	CAPABILITIES,
+	CAPABILITY_INFO,
+	describeLogin,
 	isCapability,
 	isProtected,
 	isValidRoleKey,
@@ -18,6 +23,7 @@ import {
 	normalizeEmail,
 	SYSTEM_ROLES,
 } from "./auth-rules";
+import { TRUSTED_ISSUER } from "./config";
 import spacetimedb, { ACCESS_EVENT_PURGE_INTERVAL } from "./schema";
 
 export default spacetimedb;
@@ -154,12 +160,33 @@ const StaffDirectoryRow = t.row("StaffDirectoryEntry", {
 	role_label: t.string(),
 	active: t.bool(),
 	invited_at: t.timestamp(),
+	/** Whether any login is linked to this person yet. */
+	has_signed_in: t.bool(),
+	/** Most recent connection by any of this person's logins; epoch 0 when none. */
+	last_seen_at: t.timestamp(),
 });
+
+/** Latest last_seen_at across a person's logins, or epoch 0 when they have none. */
+function lastSeenForPerson(
+	ctx: ReadCtx,
+	personId: bigint,
+): { hasLogin: boolean; at: Timestamp } {
+	let hasLogin = false;
+	let latest = 0n;
+	for (const link of ctx.db.auth_provider_link.person_id.filter(personId)) {
+		hasLogin = true;
+		if (link.last_seen_at.microsSinceUnixEpoch > latest)
+			latest = link.last_seen_at.microsSinceUnixEpoch;
+	}
+	return { hasLogin, at: new Timestamp(latest) };
+}
 
 /**
  * Every staff member, for callers holding staff.manage; nothing for anyone
  * else. Staff names and emails are staff data, not family data, and the
- * people who manage staff need them to do it.
+ * people who manage staff need them to do it. Last sign-in is a coarse
+ * timestamp so a manager can tell whether an invitation was ever used; the
+ * full access log needs access.read.
  */
 export const staffDirectory = spacetimedb.view(
 	{ name: "staff_directory", public: true },
@@ -172,6 +199,7 @@ export const staffDirectory = spacetimedb.view(
 			const person = ctx.db.person.id.find(s.person_id);
 			const role = ctx.db.role.id.find(s.role_id);
 			if (person === null || role === null) continue;
+			const seen = lastSeenForPerson(ctx, s.person_id);
 			out.push({
 				staff_id: s.id,
 				person_id: s.person_id,
@@ -181,6 +209,8 @@ export const staffDirectory = spacetimedb.view(
 				role_label: role.label,
 				active: s.active,
 				invited_at: s.invited_at,
+				has_signed_in: seen.hasLogin,
+				last_seen_at: seen.at,
 			});
 		}
 		return out;
@@ -195,6 +225,8 @@ const RoleOptionRow = t.row("RoleOption", {
 	description: t.string(),
 	system: t.bool(),
 	protected: t.bool(),
+	/** Active staff members currently in this role. */
+	holders: t.u32(),
 });
 
 /**
@@ -217,9 +249,200 @@ export const roleOptions = spacetimedb.view(
 				description: role.description,
 				system: role.system,
 				protected: roleHoldsProtected(ctx, role.id),
+				holders: [...ctx.db.staff_member.role_id.filter(role.id)].filter(
+					(m) => m.active,
+				).length,
 			});
 		}
 		return out;
+	},
+);
+
+/** One switch on the Role screen: a role × capability cell. */
+const RoleCapabilityCell = t.row("RoleCapabilityCell", {
+	/** `${role_id}:${capability}`; views need a primary key. */
+	key: t.string().primaryKey(),
+	role_id: t.u64(),
+	capability: t.string(),
+	group: t.string(),
+	label: t.string(),
+	protected: t.bool(),
+	granted: t.bool(),
+});
+
+/**
+ * Every role × every capability, with whether it is granted and how it is
+ * described. For callers holding role.manage; nothing for anyone else.
+ */
+export const roleCapabilityMatrix = spacetimedb.view(
+	{ name: "role_capability_matrix", public: true },
+	t.array(RoleCapabilityCell),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null || !me.capabilities.has("role.manage")) return [];
+		const out = [];
+		for (const role of ctx.db.role.iter()) {
+			const held = roleCapabilities(ctx, role.id);
+			for (const capability of CAPABILITIES) {
+				const info = CAPABILITY_INFO[capability];
+				out.push({
+					key: `${role.id}:${capability}`,
+					role_id: role.id,
+					capability,
+					group: info.group,
+					label: info.label,
+					protected: isProtected(capability),
+					granted: held.has(capability),
+				});
+			}
+		}
+		return out;
+	},
+);
+
+/** The caller's own person record. */
+const MyAccountRow = t.row("AccountDetails", {
+	person_id: t.u64().primaryKey(),
+	display_name: t.string(),
+	email: t.string(),
+	role_key: t.string(),
+	role_label: t.string(),
+});
+
+export const myAccount = spacetimedb.view(
+	{ name: "my_account", public: true },
+	t.option(MyAccountRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null) return undefined;
+		const person = ctx.db.person.id.find(me.personId);
+		if (person === null) return undefined;
+		return {
+			person_id: person.id,
+			display_name: person.display_name,
+			email: person.email,
+			role_key: me.roleKey,
+			role_label: ctx.db.role.id.find(me.roleId)?.label ?? me.roleKey,
+		};
+	},
+);
+
+/** One of the caller's ways to sign in. */
+const MyLoginRow = t.row("LoginEntry", {
+	link_id: t.u64().primaryKey(),
+	label: t.string(),
+	created_at: t.timestamp(),
+	last_seen_at: t.timestamp(),
+	/** True for the login this connection is using. It cannot be removed. */
+	current: t.bool(),
+});
+
+/** Every login linked to the caller's person; nothing for a stranger. */
+export const myLogins = spacetimedb.view(
+	{ name: "my_logins", public: true },
+	t.array(MyLoginRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null) return [];
+		const out = [];
+		for (const link of ctx.db.auth_provider_link.person_id.filter(
+			me.personId,
+		)) {
+			out.push({
+				link_id: link.id,
+				label: describeLogin(link.issuer, TRUSTED_ISSUER),
+				created_at: link.created_at,
+				last_seen_at: link.last_seen_at,
+				current: link.identity.isEqual(ctx.sender),
+			});
+		}
+		return out;
+	},
+);
+
+/** One of the caller's own recent connections. */
+const MySignInRow = t.row("SignInEntry", {
+	event_id: t.u64().primaryKey(),
+	at: t.timestamp(),
+	login_label: t.string(),
+	outcome: t.string(),
+});
+
+const MY_SIGN_INS_LIMIT = 20;
+
+/** The caller's most recent connections across all their logins, newest first. */
+export const myRecentSignIns = spacetimedb.view(
+	{ name: "my_recent_sign_ins", public: true },
+	t.array(MySignInRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null) return [];
+		const rows = [];
+		for (const link of ctx.db.auth_provider_link.person_id.filter(
+			me.personId,
+		)) {
+			const label = describeLogin(link.issuer, TRUSTED_ISSUER);
+			for (const ev of ctx.db.access_event.identity.filter(link.identity)) {
+				rows.push({
+					event_id: ev.id,
+					at: ev.at,
+					login_label: label,
+					outcome: ev.outcome,
+				});
+			}
+		}
+		rows.sort((a, b) =>
+			Number(b.at.microsSinceUnixEpoch - a.at.microsSinceUnixEpoch),
+		);
+		return rows.slice(0, MY_SIGN_INS_LIMIT);
+	},
+);
+
+/** One row of the access log, as shown to a system administrator. */
+const AccessLogRow = t.row("AccessLogEntry", {
+	event_id: t.u64().primaryKey(),
+	at: t.timestamp(),
+	identity_hex: t.string(),
+	issuer: t.string(),
+	email: t.string(),
+	outcome: t.string(),
+	/** Display name when the identity resolves to a person; empty otherwise. */
+	display_name: t.string(),
+});
+
+const ACCESS_LOG_LIMIT = 200;
+
+/**
+ * The door's record, newest first, for callers holding access.read. It
+ * carries the email of anyone who tried to sign in with a trusted token and
+ * wasn't invited, which is what makes the log actionable, and why the
+ * capability is protected.
+ */
+export const accessLog = spacetimedb.view(
+	{ name: "access_log", public: true },
+	t.array(AccessLogRow),
+	(ctx) => {
+		const me = resolveStaff(ctx);
+		if (me === null || !me.capabilities.has("access.read")) return [];
+		const rows = [];
+		for (const ev of ctx.db.access_event.iter()) {
+			const link = ctx.db.auth_provider_link.identity.find(ev.identity);
+			const person =
+				link === null ? null : ctx.db.person.id.find(link.person_id);
+			rows.push({
+				event_id: ev.id,
+				at: ev.at,
+				identity_hex: ev.identity.toHexString(),
+				issuer: ev.issuer,
+				email: ev.email,
+				outcome: ev.outcome,
+				display_name: person?.display_name ?? "",
+			});
+		}
+		rows.sort((a, b) =>
+			Number(b.at.microsSinceUnixEpoch - a.at.microsSinceUnixEpoch),
+		);
+		return rows.slice(0, ACCESS_LOG_LIMIT);
 	},
 );
 
@@ -454,5 +677,88 @@ export const revokeCapability = defineAdminReducer(
 			if (rc.capability === capability) ctx.db.role_capability.id.delete(rc.id);
 		}
 		return { table: "role", id: role_id };
+	},
+);
+
+/**
+ * Edit a staff member's name and email. The email is the door: a changed
+ * address is what future sign-ins must match, while logins already linked
+ * keep working. Refused if another person already has that email.
+ */
+export const setStaffPerson = defineAdminReducer(
+	{
+		name: "set_staff_person",
+		capability: "staff.manage",
+		args: { staff_id: t.u64(), display_name: t.string(), email: t.string() },
+		redact: ["display_name", "email"],
+	},
+	(ctx, actor, { staff_id, display_name, email }) => {
+		const row = ctx.db.staff_member.id.find(staff_id);
+		if (row === null) throw new SenderError("no such staff member");
+		requireSensitiveIfProtected(ctx, actor, row.role_id);
+		const person = ctx.db.person.id.find(row.person_id);
+		if (person === null) throw new SenderError("no such person");
+		if (!looksLikeEmail(email)) throw new SenderError("invalid email");
+		const normalized = normalizeEmail(email);
+		for (const other of ctx.db.person.email.filter(normalized)) {
+			if (other.id !== person.id)
+				throw new SenderError("another person already has that email");
+		}
+		const name = display_name.trim();
+		if (name.length === 0) throw new SenderError("name is required");
+		ctx.db.person.id.update({
+			...person,
+			display_name: name,
+			email: normalized,
+		});
+		return {
+			table: "person",
+			id: person.id,
+			details: { email_changed: normalized !== person.email },
+		};
+	},
+);
+
+/** Rename yourself. Any active staff member may. */
+export const updateMyName = defineAdminReducer(
+	{
+		name: "update_my_name",
+		capability: "any-staff",
+		args: { display_name: t.string() },
+		redact: ["display_name"],
+	},
+	(ctx, me, { display_name }) => {
+		const person = ctx.db.person.id.find(me.personId);
+		if (person === null) throw new SenderError("no such person");
+		const name = display_name.trim();
+		if (name.length === 0) throw new SenderError("name is required");
+		ctx.db.person.id.update({ ...person, display_name: name });
+		return { table: "person", id: person.id };
+	},
+);
+
+/**
+ * Remove one of your own logins. Refuses the login this connection is
+ * using, and refuses your last one: either would lock you out on the spot.
+ */
+export const removeMyLogin = defineAdminReducer(
+	{
+		name: "remove_my_login",
+		capability: "any-staff",
+		args: { link_id: t.u64() },
+	},
+	(ctx, me, { link_id }) => {
+		const link = ctx.db.auth_provider_link.id.find(link_id);
+		if (link === null || link.person_id !== me.personId)
+			throw new SenderError("no such login");
+		if (link.identity.isEqual(ctx.sender))
+			throw new SenderError("that is the login you are using now");
+		if (
+			[...ctx.db.auth_provider_link.person_id.filter(me.personId)].length <= 1
+		) {
+			throw new SenderError("that is your only login");
+		}
+		ctx.db.auth_provider_link.id.delete(link_id);
+		return { table: "auth_provider_link", id: link_id };
 	},
 );

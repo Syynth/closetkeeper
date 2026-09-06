@@ -4,6 +4,8 @@ import {
 	auditDetails,
 	BOOTSTRAP_ROLE_KEY,
 	CAPABILITIES,
+	CAPABILITY_INFO,
+	describeLogin,
 	inspectToken,
 	isCapability,
 	isProtected,
@@ -41,6 +43,25 @@ describe("capabilities", () => {
 		for (const c of CAPABILITIES) expect(isCapability(c)).toBe(true);
 		expect(isCapability("admin")).toBe(false);
 		expect(isCapability("")).toBe(false);
+	});
+
+	it("every capability has a plain-English label and a group", () => {
+		for (const c of CAPABILITIES) {
+			expect(CAPABILITY_INFO[c]?.label, c).toBeTruthy();
+			expect(CAPABILITY_INFO[c]?.group, c).toBeTruthy();
+		}
+		expect(Object.keys(CAPABILITY_INFO).sort()).toEqual(
+			[...CAPABILITIES].sort(),
+		);
+	});
+
+	it("the access log is protected and only the system administrator holds it by default", () => {
+		expect(isProtected("access.read")).toBe(true);
+		for (const r of SYSTEM_ROLES) {
+			expect(r.capabilities.includes("access.read"), r.key).toBe(
+				r.key === "system_admin",
+			);
+		}
 	});
 
 	it("family data and access management are protected", () => {
@@ -173,6 +194,17 @@ describe("email and key helpers", () => {
 		expect(isValidRoleKey("Intake Volunteer")).toBe(false);
 		expect(isValidRoleKey("1st")).toBe(false);
 		expect(isValidRoleKey("a")).toBe(false);
+	});
+});
+
+describe("describeLogin", () => {
+	it("names logins by where they came from, never by the identity", () => {
+		const issuer = "https://auth.spacetimedb.com/oidc";
+		expect(describeLogin("", issuer)).toBe("Publisher key");
+		expect(describeLogin(issuer, issuer)).toBe("Sign-in link");
+		expect(describeLogin("https://accounts.google.com", issuer)).toBe(
+			"accounts.google.com",
+		);
 	});
 });
 
