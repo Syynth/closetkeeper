@@ -10,7 +10,11 @@
 # change deliberately; do not "fix" it by adding the flag here.
 #
 # Dev holds no real data, so it passes --delete-data=on-conflict and wipes
-# itself rather than blocking on a conflicting change.
+# itself rather than blocking on a conflicting change. That only covers
+# schema conflicts: init runs once per database, so when what init seeds
+# changes (a role key, say), dev keeps the old rows until it is recreated.
+# Run this workflow by hand with "Recreate the dev database" checked to wipe
+# and reseed it. Nothing is deployed from a terminal.
 #
 # Each environment needs the SPACETIMEDB_TOKEN secret for an identity that
 # owns its database. The prod environment is restricted to v* tags in the
@@ -25,6 +29,12 @@ on:
     paths:
       - spacetimedb/**
       - .github/workflows/publish-module.yml
+  workflow_dispatch:
+    inputs:
+      recreate_dev:
+        description: "Recreate the dev database (wipes it and reruns init)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -32,6 +42,7 @@ permissions:
 jobs:
   dev:
     name: Publish to closetkeeper-dev
+    # A manual run only ever targets dev; the prod job is tag-only below.
     if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -56,11 +67,15 @@ jobs:
         env:
           SPACETIMEDB_TOKEN: ${{ secrets.SPACETIMEDB_TOKEN }}
       - name: Publish
+        # A manual run with recreate_dev checked wipes dev outright so init
+        # reseeds it. Every other run wipes only on a schema conflict.
+        env:
+          DELETE_DATA: ${{ inputs.recreate_dev == true && 'always' || 'on-conflict' }}
         run: >
           spacetime publish closetkeeper-dev
           --server maincloud
           --module-path spacetimedb
-          --delete-data=on-conflict
+          --delete-data="$DELETE_DATA"
           --yes=remote,skip-login,break-clients,delete-data
 
       - name: Invite the first staff member
