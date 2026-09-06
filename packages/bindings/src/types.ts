@@ -90,10 +90,10 @@ export const BagLine = __t.object("BagLine", {
   id: __t.u64(),
   bagId: __t.u64(),
   slotId: __t.u64(),
-  locationId: __t.u64(),
   count: __t.u32(),
   createdAt: __t.timestamp(),
   createdBy: __t.u64(),
+  locationId: __t.u64(),
 });
 export type BagLine = __Infer<typeof BagLine>;
 
@@ -462,7 +462,6 @@ export type StockLevel = __Infer<typeof StockLevel>;
 export const StockMovement = __t.object("StockMovement", {
   id: __t.u64(),
   slotId: __t.u64(),
-  locationId: __t.u64(),
   delta: __t.i32(),
   kind: __t.string(),
   at: __t.timestamp(),
@@ -470,6 +469,7 @@ export const StockMovement = __t.object("StockMovement", {
   bagLineId: __t.u64(),
   itemId: __t.u64(),
   note: __t.string(),
+  locationId: __t.u64(),
 });
 export type StockMovement = __Infer<typeof StockMovement>;
 

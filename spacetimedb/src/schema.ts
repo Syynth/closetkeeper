@@ -299,8 +299,6 @@ const stock_movement = table(
 	{
 		id: t.u64().primaryKey().autoInc(),
 		slot_id: t.u64().index(),
-		/** Which bin it came out of or went into. Appended with a default. */
-		location_id: t.u64().default(0n),
 		delta: t.i32(),
 		kind: t.string().index(),
 		at: t.timestamp(),
@@ -309,6 +307,11 @@ const stock_movement = table(
 		item_id: t.u64(),
 		/** Free text; may name a donor, so it is redacted from audit details. */
 		note: t.string(),
+		/**
+		 * Which bin it came out of or went into. Appended with a default, so
+		 * existing rows migrate in place; 0 means the movement predates bins.
+		 */
+		location_id: t.u64().default(0n),
 	},
 );
 
@@ -339,11 +342,11 @@ const bag_line = table(
 		id: t.u64().primaryKey().autoInc(),
 		bag_id: t.u64().index(),
 		slot_id: t.u64().index(),
-		/** Where this line is headed. Appended with a default. */
-		location_id: t.u64().default(0n),
 		count: t.u32(),
 		created_at: t.timestamp(),
 		created_by: t.u64(),
+		/** Where this line is headed. Appended with a default. */
+		location_id: t.u64().default(0n),
 	},
 );
 
