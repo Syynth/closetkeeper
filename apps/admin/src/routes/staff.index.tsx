@@ -14,6 +14,7 @@ import { useForm } from "@mantine/form";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useReducer, useTable } from "spacetimedb/react";
+import { InviteMessage } from "../components/InviteMessage";
 import { ListGroup, ListRow } from "../components/ListRow";
 import { PageHeader } from "../components/PageHeader";
 import { AuthedPage, useCan } from "../components/Shell";
@@ -125,7 +126,7 @@ function AddForm({
 	const [status, setStatus] = useState<
 		| { kind: "idle" }
 		| { kind: "busy" }
-		| { kind: "done"; email: string }
+		| { kind: "done"; email: string; roleLabel: string }
 		| { kind: "error"; message: string }
 	>({ kind: "idle" });
 
@@ -163,9 +164,14 @@ function AddForm({
 						displayName: values.display_name.trim(),
 						roleKey: values.role_key,
 					});
-					setStatus({ kind: "done", email: values.email.trim() });
+					setStatus({
+						kind: "done",
+						email: values.email.trim().toLowerCase(),
+						roleLabel:
+							roles.find((r) => r.key === values.role_key)?.label ??
+							values.role_key,
+					});
 					form.reset();
-					onDone();
 				} catch (e) {
 					setStatus({
 						kind: "error",
@@ -200,9 +206,15 @@ function AddForm({
 					Add to staff
 				</Button>
 				{status.kind === "done" ? (
-					<Alert color="pine" title="Added" role="status">
-						{status.email} can sign in now.
-					</Alert>
+					<>
+						<Alert color="pine" title="Added" role="status">
+							{status.email} can sign in now.
+						</Alert>
+						<InviteMessage email={status.email} roleLabel={status.roleLabel} />
+						<Button variant="subtle" size="md" onClick={onDone}>
+							Done
+						</Button>
+					</>
 				) : null}
 				{status.kind === "error" ? (
 					<Alert color="clay" title="Not added" role="alert">
