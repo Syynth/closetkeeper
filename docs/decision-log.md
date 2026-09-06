@@ -472,3 +472,46 @@ Entries are appended at the bottom, newest last.
   means the web app works on day one, the native app is an upgrade rather
   than a requirement, and nothing about the tags has to change when the
   app arrives.
+
+## A request never holds stock
+- **WHEN:** 2026-09-06
+- **PROJECT:** closetkeeper
+- **SYSTEM:** requests
+- **SCOPE:** architectural
+- **WHAT:** Recording a request changes nothing on the shelves, nothing is
+  packed ahead, and the clothes stay in their bins until the family is
+  standing there. Availability is computed live at resolution, twice: once
+  when a pickup is scheduled and again at the pickup itself. Stock leaves
+  only at collection.
+- **WHY:** The goods physically sit in bins anyone can take from, so a
+  reservation in the app would be a promise the room cannot keep. Counting
+  what is actually on the shelf is the only number that stays true.
+
+## Anonymous requests are demand, not a promise
+- **WHEN:** 2026-09-06
+- **PROJECT:** closetkeeper
+- **SYSTEM:** requests
+- **SCOPE:** architectural
+- **WHAT:** An anonymous request records demand but cannot be scheduled or
+  fulfilled. Contact information is what makes a pickup possible, and the
+  form says so at the moment the choice is made. An anonymous request can
+  later have a person attached. Because it holds nothing personal, it is
+  kept as demand history rather than purged with the family records.
+- **WHY:** A family should be able to say a need exists without giving
+  anything up, and that signal is what grant applications and donation asks
+  are built from. But there is nobody to tell when it is ready and nobody to
+  hand it to, so fulfilment needs contact.
+
+## A pickup is a record of what happened, not a checklist
+- **WHEN:** 2026-09-06
+- **PROJECT:** closetkeeper
+- **SYSTEM:** requests
+- **SCOPE:** architectural
+- **WHAT:** Items given are movements carrying the pickup's id, requested or
+  not, and a request line has no `filled` column. A pickup needs no request,
+  so a walk-in is recorded the same way. Nothing scores the difference
+  between what was asked for and what was given.
+- **WHY:** What a family leaves with is never what they asked for: things do
+  not fit, they find more, they decline some. Both the wanting and the
+  happening stay on the record so the difference is answerable a year later,
+  without the app calling a good day a discrepancy.
