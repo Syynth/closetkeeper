@@ -322,8 +322,10 @@ Suppression logic belongs in the cron job or a reducer — never in the template
 
 ## Things deliberately not built
 
-- Item-level SKU tracking of individual garments. Counts by category and size
-  only. Per-garment tracking is what kills volunteer adoption within a month.
+- Mandatory per-garment tracking. Counts by category × size × gender ×
+  condition are the source of truth; an item identity (ID, QR label, tag ID,
+  location) is optional and layered on top. Volunteers are never required to
+  label anything. See `docs/decision-log.md`, "Optional item identity".
 - Family login as a prerequisite for requesting help. The public request form
   works with no account; accounts are optional and added later via magic link.
 - Server-side subscriptions. Cloudflare Workers cannot hold long-lived outbound

@@ -398,3 +398,24 @@ Entries are appended at the bottom, newest last.
   the login page. Copy-paste costs nothing now; an email-sending Worker
   would be the project's first server-side surface and its first secret in
   a runtime, which is worth doing deliberately rather than for one invite.
+
+## Optional item identity on top of counts; schema shaped for barcodes and reader hardware
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** inventory
+- **SCOPE:** architectural
+- **WHAT:** Stock is counted by category × size × gender × condition. On top
+  of that, a garment may optionally be given an item identity: a row with an
+  ID, a printable QR label, and room for a tag ID and a location. Labeling
+  is never required for intake or hand-out; a shelf where some items are
+  labeled and most are not is the expected state. The schema reserves the
+  pieces for reader hardware from the start: a device allowlist (the
+  `staff_member` idea for readers), a location vocabulary, and an
+  append-only sighting ledger, to be added later behind a small Worker
+  endpoint. This reverses the brainstorm-era "no item-level tracking" note
+  in CLAUDE.md.
+- **WHY:** The maintainer wants barcodes now and to experiment with IoT
+  tracking (RFID/BLE) later, and wants the schema shaped for it from the
+  start so nothing needs migrating once real data exists. Counts remain the
+  source of truth so volunteers are never forced to label anything, which
+  is what the original note was worried about.
