@@ -155,9 +155,10 @@ unavailable.
 chaotic ("8", "8-10", "youth M", "size 9") and free text destroys the gap
 analysis within weeks. Dropdown only, sourced from the size table.
 
-**Category × size is the spine.** Inventory counts and open requests both roll
-up to a `category_size` row. The gap report is on-hand minus open requests,
-grouped by that spine. This drives both purchasing and donation asks.
+**Category × size × gender × condition is the spine.** Inventory counts and
+open requests both roll up to that combination. The gap report is on-hand
+minus open requests, grouped by it. This drives both purchasing and donation
+asks. Gender and condition are vocabularies like the rest.
 
 **Personhood is separate from identity.** Most families and donors will never
 log in — they phone, or drop off a bag at a fundraiser.

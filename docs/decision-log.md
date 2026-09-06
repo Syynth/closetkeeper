@@ -419,3 +419,38 @@ Entries are appended at the bottom, newest last.
   start so nothing needs migrating once real data exists. Counts remain the
   source of truth so volunteers are never forced to label anything, which
   is what the original note was worried about.
+
+## Gender is a fourth axis of every count, as a vocabulary
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** inventory
+- **SCOPE:** moderate
+- **WHAT:** Every stock count is category × size × gender × condition.
+  Gender is a vocabulary (rows; seeded boys, girls, neutral), not code.
+  Intake asks for it as one more tap.
+- **WHY:** Requests arrive as "boy, size 6" and the gap report has to
+  answer in those terms, and the physical closet is laid out boys / girls /
+  neutral, so the shelves screen should mirror the shelves.
+
+## Condition is a dimension of the count from the first version
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** inventory
+- **SCOPE:** moderate
+- **WHAT:** Condition is a vocabulary and a dimension of the count from the
+  first version, not a note on the intake line. Seeded new, good, worn.
+- **WHY:** It is used three ways that all need it countable: choosing what
+  to hand out at an appointment, reporting to funders how much was new, and
+  gating at intake what goes to textile recycling instead of the shelf.
+
+## Intake is recorded as a bag with lines, from day one
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** inventory
+- **SCOPE:** moderate
+- **WHAT:** Intake is recorded as a bag (a donation or purchase session)
+  with lines, from day one. A bag can be opened, photographed, and closed
+  with no lines, and tagged later.
+- **WHY:** A donor receipt lists what one donor gave, so the bag is that
+  unit; and the snap-now-tag-later flow needs a container for untagged
+  photos to live in.
