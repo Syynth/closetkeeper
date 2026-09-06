@@ -159,3 +159,42 @@ describe("account and person reducers", () => {
 		expect(err).toMatch(/using now|only login/);
 	});
 });
+
+describe("first-visit welcome", () => {
+	it("the publisher is welcomed by init; an invitee is not until finish_welcome", () => {
+		const me = sql<[boolean, string]>(
+			DATABASE,
+			"SELECT welcomed, display_name FROM my_staff",
+		);
+		expect(me[0]?.[0]).toBe(true);
+		// Invitees start un-welcomed: the seeded publisher is the only welcomed row.
+		// Timestamps come back as a one-element product: [micros].
+		const stamps = sql<[number, [number]]>(
+			DATABASE,
+			"SELECT id, welcomed_at FROM staff_member",
+		);
+		expect(stamps.length).toBeGreaterThan(1);
+		expect(stamps.filter(([, [micros]]) => micros > 0)).toHaveLength(1);
+		expect(call(DATABASE, "finish_welcome", ["Ben C."])).toBeNull();
+		expect(
+			sql<[string, boolean]>(
+				DATABASE,
+				"SELECT display_name, welcomed FROM my_staff",
+			),
+		).toEqual([["Ben C.", true]]);
+		expect(call(DATABASE, "finish_welcome", [""])).toContain("required");
+		expect(
+			call(DATABASE, "finish_welcome", ["X"], { anonymous: true }),
+		).toContain("not authorized");
+	});
+
+	it("my_staff carries plain-English capability labels", () => {
+		const rows = sql<[string[], string[]]>(
+			DATABASE,
+			"SELECT capabilities, capability_labels FROM my_staff",
+		);
+		const [caps, labels] = rows[0] ?? [[], []];
+		expect(labels.length).toBe(caps.length);
+		expect(labels).toContain("See the shelves");
+	});
+});

@@ -31,6 +31,8 @@ export { purgeAccessEvents } from "./schema";
 
 /** Sentinel for `invited_by` and `actor_staff_id` when the module itself acted. */
 const SYSTEM = 0n;
+/** Epoch 0: "has not happened". */
+const NEVER = new Timestamp(0n);
 
 /**
  * Runs exactly once, when the database is first created. `ctx.sender` here is
@@ -85,6 +87,7 @@ export const init = spacetimedb.init((ctx) => {
 		active: true,
 		invited_at: ctx.timestamp,
 		invited_by: SYSTEM,
+		welcomed_at: ctx.timestamp,
 	});
 
 	ctx.db.access_event_purge_schedule.insert({
@@ -115,10 +118,16 @@ export const onDisconnect = spacetimedb.clientDisconnected(() => {
 const MyStaffRow = t.row("StaffStanding", {
 	staff_id: t.u64().primaryKey(),
 	person_id: t.u64(),
+	display_name: t.string(),
 	role_key: t.string(),
 	role_label: t.string(),
+	role_description: t.string(),
 	active: t.bool(),
 	capabilities: t.array(t.string()),
+	/** Plain-English labels, same order as `capabilities`. */
+	capability_labels: t.array(t.string()),
+	/** False until the person has finished their first-visit welcome. */
+	welcomed: t.bool(),
 });
 
 /**
@@ -139,13 +148,21 @@ export const myStaff = spacetimedb.view(
 		const capabilities: string[] = [];
 		for (const rc of ctx.db.role_capability.role_id.filter(role.id))
 			capabilities.push(rc.capability);
+		capabilities.sort();
+		const person = ctx.db.person.id.find(staff.person_id);
 		return {
 			staff_id: staff.id,
 			person_id: staff.person_id,
+			display_name: person?.display_name ?? "",
 			role_key: role.key,
 			role_label: role.label,
+			role_description: role.description,
 			active: staff.active,
-			capabilities: capabilities.sort(),
+			capabilities,
+			capability_labels: capabilities.map((c) =>
+				isCapability(c) ? CAPABILITY_INFO[c].label : c,
+			),
+			welcomed: staff.welcomed_at.microsSinceUnixEpoch > 0n,
 		};
 	},
 );
@@ -504,6 +521,7 @@ export const inviteStaff = defineAdminReducer(
 			active: true,
 			invited_at: ctx.timestamp,
 			invited_by: inviter.staffId,
+			welcomed_at: NEVER,
 		});
 		return {
 			table: "staff_member",
@@ -760,5 +778,35 @@ export const removeMyLogin = defineAdminReducer(
 		}
 		ctx.db.auth_provider_link.id.delete(link_id);
 		return { table: "auth_provider_link", id: link_id };
+	},
+);
+
+/**
+ * The first-visit welcome: confirm your name and mark the welcome done.
+ * Any active staff member may; running it again just re-saves the name.
+ */
+export const finishWelcome = defineAdminReducer(
+	{
+		name: "finish_welcome",
+		capability: "any-staff",
+		args: { display_name: t.string() },
+		redact: ["display_name"],
+	},
+	(ctx, me, { display_name }) => {
+		const person = ctx.db.person.id.find(me.personId);
+		const staff = ctx.db.staff_member.id.find(me.staffId);
+		if (person === null || staff === null)
+			throw new SenderError("no such person");
+		const name = display_name.trim();
+		if (name.length === 0) throw new SenderError("name is required");
+		ctx.db.person.id.update({ ...person, display_name: name });
+		const first = staff.welcomed_at.microsSinceUnixEpoch === 0n;
+		if (first)
+			ctx.db.staff_member.id.update({ ...staff, welcomed_at: ctx.timestamp });
+		return {
+			table: "staff_member",
+			id: staff.id,
+			details: { first_visit: first },
+		};
 	},
 );

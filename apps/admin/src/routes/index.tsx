@@ -8,7 +8,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth } from "react-oidc-context";
 import { useSpacetimeDB, useTable } from "spacetimedb/react";
 import { ListGroup, ListRow } from "../components/ListRow";
@@ -114,6 +114,7 @@ function Dashboard() {
 			</Card>
 		);
 	}
+	if (!me.welcomed) return <Navigate to="/welcome" replace />;
 
 	const active = directory.filter((s) => s.active).length;
 	const notYet = directory.filter((s) => s.active && !s.hasSignedIn).length;

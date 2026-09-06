@@ -8,6 +8,7 @@ import { type Infer as __Infer } from "spacetimedb";
 // Import all reducer arg schemas
 import CreateRoleReducer from "../create_role_reducer";
 import DeleteRoleReducer from "../delete_role_reducer";
+import FinishWelcomeReducer from "../finish_welcome_reducer";
 import GrantCapabilityReducer from "../grant_capability_reducer";
 import InviteStaffReducer from "../invite_staff_reducer";
 import RemoveMyLoginReducer from "../remove_my_login_reducer";
@@ -20,6 +21,7 @@ import UpdateRoleReducer from "../update_role_reducer";
 
 export type CreateRoleParams = __Infer<typeof CreateRoleReducer>;
 export type DeleteRoleParams = __Infer<typeof DeleteRoleReducer>;
+export type FinishWelcomeParams = __Infer<typeof FinishWelcomeReducer>;
 export type GrantCapabilityParams = __Infer<typeof GrantCapabilityReducer>;
 export type InviteStaffParams = __Infer<typeof InviteStaffReducer>;
 export type RemoveMyLoginParams = __Infer<typeof RemoveMyLoginReducer>;

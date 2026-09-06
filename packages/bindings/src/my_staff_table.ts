@@ -13,8 +13,12 @@ import {
 export default __t.row({
   staffId: __t.u64().primaryKey().name("staff_id"),
   personId: __t.u64().name("person_id"),
+  displayName: __t.string().name("display_name"),
   roleKey: __t.string().name("role_key"),
   roleLabel: __t.string().name("role_label"),
+  roleDescription: __t.string().name("role_description"),
   active: __t.bool(),
   capabilities: __t.array(__t.string()),
+  capabilityLabels: __t.array(__t.string()).name("capability_labels"),
+  welcomed: __t.bool(),
 });
