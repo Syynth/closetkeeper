@@ -137,7 +137,9 @@ Phase 1 (current): internal admin only — inventory, donation intake, requests,
 appointments, staff/volunteer accounts.
 
 Phase 2 (later): public-facing request form, donation-needs page, appointment
-self-scheduling.
+self-scheduling. The request flow is designed in
+[`docs/design/requests.md`](docs/design/requests.md); phase 1 is staff
+recording requests that arrive by phone.
 
 Do not build phase 2 surfaces early. SpacetimeDB row-level security is still
 marked experimental and unstable; phase 1 avoids depending on it by keeping all
