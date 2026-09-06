@@ -454,3 +454,23 @@ Entries are appended at the bottom, newest last.
 - **WHY:** A donor receipt lists what one donor gave, so the bag is that
   unit; and the snap-now-tag-later flow needs a container for untagged
   photos to live in.
+
+## Mobile app and NFC stickers as the scanning path
+- **WHEN:** 2026-09-05
+- **PROJECT:** closetkeeper
+- **SYSTEM:** inventory
+- **SCOPE:** architectural
+- **STATUS:** tentative
+- **WHAT:** Items and bins carry label codes, and the only payload ever
+  printed on a label or written to an NFC sticker is an https link into the
+  app (`/i/<code>`, `/b/<code>`), so a QR label and a sticker are
+  interchangeable and phones open them with no app installed. Later, a
+  narrow Expo app (`apps/mobile`) handles what the web cannot: writing
+  stickers, continuous scanning, and opening straight into an item or bin
+  via universal links. Admin stays on the web.
+- **WHY:** The maintainer wants to wave a phone at a garment or bin and be
+  in the right screen immediately, and expects to need a native app for
+  scanning and bagging. Making the sticker payload a plain https link
+  means the web app works on day one, the native app is an upgrade rather
+  than a requirement, and nothing about the tags has to change when the
+  app arrives.
