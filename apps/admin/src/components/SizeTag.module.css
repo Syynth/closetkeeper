@@ -58,9 +58,18 @@
 
 .track {
 	display: flex;
-	gap: 0.6rem;
 	width: max-content;
 	padding: 0.25rem 0;
+}
+
+/*
+ * Spacing is a margin on each tag, not a flex gap, so the track is exactly
+ * two identical halves and translating by -50% lands on the same picture.
+ * A gap would leave the second copy half a gap short of where the first
+ * started, and the loop would hop every lap.
+ */
+.track > * {
+	margin-right: 0.6rem;
 }
 
 .marquee[data-direction="left"] .track {
