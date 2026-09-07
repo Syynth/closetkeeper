@@ -212,9 +212,10 @@ stable identity and **no authorization whatsoever**.
   link and Google are both enabled. Adding a provider is a toggle in the
   SpacetimeAuth project, never a schema change: each way of signing in is
   one more `auth_provider_link` row for the same person.
-- **Magic-link email delivery is currently unreliable** (see
-  `docs/outstanding.md`). Google is what works. Say so when inviting
-  somebody rather than letting them wait for an email.
+- **Magic-link emails can take half an hour to arrive** (see
+  `docs/outstanding.md`). Google is what works without waiting. Offer it when
+  inviting somebody, and if they want the email, tell them it is slow rather
+  than letting them conclude it never came.
 - **Anyone can obtain a valid SpacetimeDB identity.** Authentication proves
   only that a caller is *someone*, not that they are *ours*. The
   `staff_member` allowlist carries the entire authorization burden. Treat a
